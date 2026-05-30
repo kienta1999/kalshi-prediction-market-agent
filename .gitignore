@@ -1,0 +1,18 @@
+# Secrets — Kalshi API key id + RSA private key. NEVER commit.
+kalshi-prediction-market-agent.txt
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Logs (runtime trade journal — keep lessons.md tracked, ignore raw jsonl)
+logs/*.jsonl
+
+# OS
+.DS_Store

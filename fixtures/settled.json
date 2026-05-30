@@ -1,0 +1,17 @@
+{
+  "cursor": "",
+  "markets": [
+    {
+      "ticker": "KXBTCD-26MAY3017-T73249.99",
+      "title": "Bitcoin price on May 30, 2026?",
+      "status": "settled",
+      "result": "yes"
+    },
+    {
+      "ticker": "KXINXU-26MAY29H1600-T6000",
+      "title": "Will the S&P 500 be above 6000 on May 29, 2026?",
+      "status": "settled",
+      "result": "no"
+    }
+  ]
+}

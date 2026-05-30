@@ -1,0 +1,7 @@
+cryptography>=42
+requests>=2.32
+yfinance>=0.2.40
+pandas>=2.0
+numpy>=1.26
+feedparser>=6.0
+APScheduler>=3.10
