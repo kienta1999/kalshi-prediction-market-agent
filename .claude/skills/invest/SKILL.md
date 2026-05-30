@@ -20,24 +20,28 @@ Read `logs/lessons.md`. Apply its heuristics to every probability estimate and t
 - `slots = 20 - open_positions`. If `slots <= 0`, stop and report "at position cap".
 
 ## Step 3 — Candidate markets
-- `.venv/bin/python kalshi.py financial-markets` → normalized, tradeable, volume-sorted markets (default = mappable index/crypto series). Add `--all` to scan every financial series (heavy) or `--series A,B` to target specific ones.
-- Take the top candidates by volume (liquidity = realistic fills). Analyzing ~15-30 is plenty; you only have `slots` to fill.
+- `.venv/bin/python kalshi.py financial-markets` → normalized, tradeable, volume-sorted markets, each tagged with a routing `category` and `yf_symbol`. Default = mappable index/crypto series. Add `--all` to scan every financial series (IPO/macro/single-stock/rates — heavy, many calls), `--series A,B` for specific series, or `--category <name>` to filter to one bucket.
+- Take the top candidates by volume (liquidity = realistic fills). Analyzing ~15-30 is plenty; you only have `slots` to fill. Spread across categories so you are not all-in on one underlying.
 
 ## Step 4 — Per-market analysis (classify, then route)
-For each candidate, classify from `series_ticker` + `title`:
+Each market already carries a `category` (from `config.classify_market`). Route tools by it. **Only the first three categories have a quantitative anchor (a `yf_symbol` + a price strike); the rest are news-reasoning only and cannot be backtested — treat their estimates as lower-confidence.**
 
-| Category | Tools to run |
-|---|---|
-| Index/stock threshold (short-dated) | probability + technical + news |
-| Single-stock / earnings-horizon | probability + technical + **fundamentals** + news |
-| Macro/econ (CPI, Fed, jobs, GDP) | news only |
-| Crypto threshold | probability + technical + news |
-| Rates/FX | news only |
+| `category` | Quant anchor? | Tools to run |
+|---|---|---|
+| `crypto` | yes (`yf_symbol`) | probability + technical + news |
+| `index` | yes (`yf_symbol`) | probability + technical + news |
+| `single_stock` | yes, **if** it's a real security | **confirm the underlying first** → probability + technical + **fundamentals** + news; if it's a numeric event (e.g. launch counts), drop to news only |
+| `ipo` | no | news only (filings, S-1 chatter, exchange notices) |
+| `macro` (CPI, Fed, jobs, GDP) | no | news only — consensus/forecasts |
+| `rates_fx` | no | news only |
+| `other` | no | news only |
 
-- **Resolve the yfinance symbol:** the `financial-markets` output's `series_ticker` maps via the table in `config.py` (e.g. KXINXU→^GSPC, KXBTCD→BTC-USD). For single stocks, infer the symbol from the title. For macro markets there is no symbol — reason from news only.
+- **`single_stock` is a coarse bucket:** a numeric strike on a non-index/crypto series is *usually* a company price market but sometimes a numeric event. Confirm what the underlying is and infer its yfinance symbol from the title before trusting probability/fundamentals; if it isn't a tradeable security, treat as news-only.
+- **Resolve the yfinance symbol:** use the market's `yf_symbol` field when present (index/crypto). For single stocks, infer the symbol from the title. For `ipo`/`macro`/`rates_fx`/`other` there is no symbol — reason from news only.
+- **Model edge is necessary but NOT sufficient (backtest finding):** on pure price markets the lognormal model is well-calibrated but has **no tradeable edge over Kalshi's order book** — model-vs-market disagreements are mostly model error (adverse selection), so trading the raw model gap loses money. Only take a price-market bet when a *news catalyst* justifies an edge the market hasn't priced; treat `model_p` as a sanity check, not a signal on its own.
 - **Strike & expiry:** the normalized market gives `floor_strike`, `cap_strike`, `strike_type`, and `close_time`. Threshold markets have one strike (use `--strike` + `--dir above/below` per `strike_type`); range markets have both (use `--floor` + `--cap`).
 - Run the routed tools:
-  - `.venv/bin/python probability.py --ticker <yf> --strike <K> --dir above --expiry <YYYY-MM-DD>` (or `--floor/--cap` for ranges) → `model_p` anchor.
+  - `.venv/bin/python probability.py --ticker <yf> --strike <K> --dir above --expiry <YYYY-MM-DD>` (or `--floor/--cap` for ranges) → `model_p` anchor. Uses the latest **intraday** spot (check `spot_source`). For same-day markets `days_to_expiry=0` collapses the model to "is spot already past the strike," so lean on technicals/news for the actual call.
   - `.venv/bin/python technical.py <yf>`
   - `.venv/bin/python fundamentals.py <yf>` (only for single-stock/earnings)
   - `.venv/bin/python news.py <yf or "free text"> --days 7` → news links.

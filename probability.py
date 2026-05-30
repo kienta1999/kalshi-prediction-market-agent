@@ -45,20 +45,39 @@ def _p_above(s0: float, k: float, sigma: float, t: float) -> float:
     return _norm_cdf(d2)
 
 
+def _live_spot(ticker: str) -> float | None:
+    """Most recent intraday price. Kalshi financial markets are mostly intraday
+    (sub-day horizons), so a day-old daily close is too stale to anchor on."""
+    try:
+        intr = yf.Ticker(ticker).history(period="1d", interval="1m", auto_adjust=True)
+        if not intr.empty:
+            return float(intr["Close"].dropna().iloc[-1])
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
 def compute(ticker: str, expiry: str, strike: float | None = None,
             direction: str = "above", floor: float | None = None,
-            cap: float | None = None, period: str = "1y") -> dict:
+            cap: float | None = None, period: str = "1y",
+            spot: float | None = None) -> dict:
     df = yf.Ticker(ticker).history(period=period, auto_adjust=True)
     if df.empty or len(df) < 30:
         return {"ticker": ticker, "error": "insufficient price history"}
     close = df["Close"]
-    s0 = float(close.iloc[-1])
     sigma = _annual_vol(close)
     t, days = _years_to_expiry(expiry)
 
+    if spot is not None:
+        s0, spot_source = float(spot), "override"
+    else:
+        live = _live_spot(ticker)
+        s0 = live if live is not None else float(close.iloc[-1])
+        spot_source = "intraday" if live is not None else "daily_close"
+
     out = {
-        "ticker": ticker, "spot": round(s0, 4), "annual_vol": round(sigma, 4),
-        "days_to_expiry": days, "expiry": expiry,
+        "ticker": ticker, "spot": round(s0, 4), "spot_source": spot_source,
+        "annual_vol": round(sigma, 4), "days_to_expiry": days, "expiry": expiry,
     }
     if floor is not None and cap is not None:  # range market
         p = _p_above(s0, floor, sigma, t) - _p_above(s0, cap, sigma, t)
@@ -83,12 +102,14 @@ def main(argv=None) -> int:
     p.add_argument("--floor", type=float, default=None)
     p.add_argument("--cap", type=float, default=None)
     p.add_argument("--period", default="1y")
+    p.add_argument("--spot", type=float, default=None,
+                   help="override spot (else uses latest intraday price)")
     args = p.parse_args(argv)
     # normalize ISO datetime down to date string for parsing
     expiry = args.expiry[:10]
     try:
         out = compute(args.ticker, expiry, strike=args.strike, direction=args.direction,
-                      floor=args.floor, cap=args.cap, period=args.period)
+                      floor=args.floor, cap=args.cap, period=args.period, spot=args.spot)
     except Exception as exc:  # noqa: BLE001
         out = {"ticker": args.ticker, "error": str(exc)}
     print(json.dumps(out, indent=2))

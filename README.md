@@ -30,6 +30,7 @@ Three flows:
 | `sizing.py` | Half-Kelly → integer contract count, capped at 10% of bankroll per trade. A calculator, not a decision-maker. |
 | `journal.py` | Central JSONL logging: `log-decision` (every market evaluated, trade and skip), `log-sell` (every cron eval), plus `read_*` / `join_outcomes` helpers. Dry-run rows are excluded from learning. |
 | `sell_cron.py` | APScheduler daemon. TP: `(bid-entry) >= 0.75*(100-entry)`; SL: `(entry-bid) >= 0.40*entry`. Sells via an opposing limit-IOC order at the live bid. |
+| `backtest.py` | Replays the probability model + edge filter + sizing against real settled Kalshi markets (real intraday prices via candlesticks, real outcomes). Tests the deterministic core only — not Claude's news judgment, which can't be backtested without hindsight. |
 
 Skills live in `.claude/skills/invest/SKILL.md` and `.claude/skills/self-improve/SKILL.md`.
 

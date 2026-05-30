@@ -67,11 +67,75 @@ SERIES_TO_YF = {
 }
 
 
+# Prefix families for the index/crypto series (Kalshi appends suffixes like
+# U/D/W/Y/100Y to the same underlying), so symbol resolution is prefix-aware.
+_YF_PREFIXES = (
+    ("KXNASDAQ100", "^NDX"),
+    ("KXNASDAQ", "^NDX"),
+    ("KXDJI", "^DJI"),
+    ("KXINX", "^GSPC"),
+    ("KXSPX", "^GSPC"),
+    ("KXBTC", "BTC-USD"),
+    ("KXETH", "ETH-USD"),
+)
+
+
 def resolve_yf_symbol(series_ticker: str) -> str | None:
-    """Map a Kalshi series_ticker to a yfinance symbol, or None if unknown."""
+    """Map a Kalshi series_ticker to a yfinance symbol, or None if unknown.
+    Tries the exact map first, then the known index/crypto prefix families."""
     if not series_ticker:
         return None
-    return SERIES_TO_YF.get(series_ticker.upper())
+    st = series_ticker.upper()
+    if st in SERIES_TO_YF:
+        return SERIES_TO_YF[st]
+    for prefix, sym in _YF_PREFIXES:
+        if st.startswith(prefix):
+            return sym
+    return None
+
+
+# --- Market classification ---------------------------------------------------
+# Routes each market to the right analysis tools in /invest. Only price-threshold
+# and single-stock markets have a quantitative anchor (probability.py); the rest
+# are news-reasoning-only (and not backtestable). Order matters: most specific
+# first.
+_CRYPTO_SERIES = ("KXBTC", "KXETH")
+_INDEX_SERIES = ("KXINX", "KXNASDAQ", "KXDJI", "KXSPX")
+_MACRO_KW = ("cpi", "inflation", "ppi", "payroll", "jobs", "unemployment", "gdp",
+             "recession", "fed", "fomc", "rate decision", "interest rate", "jobless")
+_RATES_FX_KW = ("usd", "eur", "gbp", "jpy", "aud", "cad", "yuan", "yen", "euro",
+                "treasury", "yield", "10-year", "2-year", "fx", "dollar")
+_IPO_KW = ("ipo", "go public", "public offering", "debut", "direct listing")
+
+
+def classify_market(series_ticker: str | None, title: str | None = None,
+                    strike_type: str | None = None) -> str:
+    """Bucket a market into a routing category from its series ticker + title.
+
+    Returns one of: crypto, index, single_stock, ipo, macro, rates_fx, other.
+    `crypto`/`index`/`single_stock` carry a price strike -> quant anchor applies;
+    `ipo`/`macro`/`rates_fx`/`other` are event markets -> news reasoning only.
+    """
+    st = (series_ticker or "").upper()
+    t = (title or "").lower()
+
+    if st.startswith(_CRYPTO_SERIES) or resolve_yf_symbol(st) in ("BTC-USD", "ETH-USD"):
+        return "crypto"
+    if st.startswith(_INDEX_SERIES) or resolve_yf_symbol(st) in ("^GSPC", "^NDX", "^DJI"):
+        return "index"
+    if st.startswith("KXIPO") or any(k in t for k in _IPO_KW):
+        return "ipo"
+    if any(k in t for k in _MACRO_KW):
+        return "macro"
+    if any(k in t for k in _RATES_FX_KW) or st.endswith(("USDQ", "USDM")):
+        return "rates_fx"
+    # A numeric strike on a non-index/crypto series is *usually* a single-stock
+    # price market, but can be a numeric event (e.g. SpaceX launch counts).
+    # /invest must confirm the underlying + infer the yfinance symbol before
+    # trusting the quant/fundamental tools; if it is not a security, treat as news.
+    if strike_type in ("greater", "less", "between") and st.startswith("KX"):
+        return "single_stock"
+    return "other"
 
 
 # --- Credential parsing ------------------------------------------------------

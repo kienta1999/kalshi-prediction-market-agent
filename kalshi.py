@@ -223,14 +223,41 @@ class KalshiClient:
         return self._read("GET", "/markets", "settled.json",
                           params={"tickers": tickers, "status": "settled"})
 
+    def get_settled_markets(self, series_ticker: str, max_pages: int = 10) -> list[dict]:
+        """Enumerate settled markets for a series (paginated). Used by the
+        backtest to get real strikes, close times, and YES/NO ground-truth."""
+        out, cursor = [], None
+        for _ in range(max_pages):
+            page = self.list_markets(series_ticker=series_ticker, status="settled",
+                                     limit=1000, cursor=cursor)
+            out.extend(page.get("markets", []))
+            cursor = page.get("cursor")
+            if not cursor:
+                break
+        return out
+
+    def get_candlesticks(self, series_ticker: str, ticker: str, start_ts: int,
+                         end_ts: int, period_interval: int = 60) -> list[dict]:
+        """Historical OHLC of yes_ask/yes_bid for one market. period_interval in
+        minutes (1, 60, or 1440). Lets the backtest read the price an agent would
+        have faced at decision time."""
+        r = self._request(
+            "GET", f"/series/{series_ticker}/markets/{ticker}/candlesticks",
+            params={"start_ts": start_ts, "end_ts": end_ts,
+                    "period_interval": period_interval})
+        return r.get("candlesticks", [])
+
     def financial_markets(self, series: list[str] | None = None,
-                          tradeable_only: bool = True) -> list[dict]:
-        """Normalized open markets for the given financial series.
+                          tradeable_only: bool = True,
+                          category: str | None = None) -> list[dict]:
+        """Normalized open markets for the given financial series, each tagged
+        with a routing `category` and `yf_symbol` (None for event markets).
 
         Defaults to the series we can map to a yfinance symbol (index/crypto),
-        which keeps this to a handful of API calls and a tractable candidate set
-        for deep analysis. Pass an explicit `series` list (e.g. Economics series
-        tickers) to widen the scan.
+        which keeps this to a handful of API calls and a tractable candidate set.
+        Pass an explicit `series` list (or scan all via the CLI `--all`) to widen
+        across IPO/macro/rates/single-stock markets. `category` filters the
+        result to one routing bucket (see config.classify_market).
         """
         if series is None:
             series = list(config.SERIES_TO_YF.keys())
@@ -242,6 +269,11 @@ class KalshiClient:
                 if nm["ticker"] in seen:
                     continue
                 if tradeable_only and not is_tradeable(nm):
+                    continue
+                nm["category"] = config.classify_market(
+                    nm["series_ticker"], nm["title"], nm["strike_type"])
+                nm["yf_symbol"] = config.resolve_yf_symbol(nm["series_ticker"])
+                if category and nm["category"] != category:
                     continue
                 seen.add(nm["ticker"])
                 out.append(nm)
@@ -287,6 +319,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="CSV of series tickers to scan (default: mappable index/crypto series)")
     fm.add_argument("--all", action="store_true",
                     help="scan every financial series (heavy; many API calls)")
+    fm.add_argument("--category", default=None,
+                    help="filter to one routing category: crypto/index/single_stock/ipo/macro/rates_fx/other")
     fm.add_argument("--include-untradeable", action="store_true")
     gm = sub.add_parser("market"); gm.add_argument("ticker")
     se = sub.add_parser("settled"); se.add_argument("--tickers", required=True)
@@ -319,7 +353,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             series = None
         out = client.financial_markets(series=series,
-                                       tradeable_only=not args.include_untradeable)
+                                       tradeable_only=not args.include_untradeable,
+                                       category=args.category)
     elif args.cmd == "market":
         out = normalize_market(client.get_market(args.ticker).get("market", {}))
     elif args.cmd == "settled":
