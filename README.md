@@ -105,3 +105,6 @@ you exercise the whole flow without moving money — and works fully offline if 
 2. `.venv/bin/python kalshi.py financial-markets` — real open markets.
 3. `/invest` with `--dry-run` on orders — inspect the proposed bet table.
 4. Drop `--dry-run`, place one small live bet, confirm the fill, then start `sell_cron.py`.
+
+
+claude --resume b060f89c-1079-4428-8bb8-da2238fe4f70

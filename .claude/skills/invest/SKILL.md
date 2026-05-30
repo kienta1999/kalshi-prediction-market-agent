@@ -20,8 +20,9 @@ Read `logs/lessons.md`. Apply its heuristics to every probability estimate and t
 - `slots = 20 - open_positions`. If `slots <= 0`, stop and report "at position cap".
 
 ## Step 3 — Candidate markets
-- `.venv/bin/python kalshi.py financial-markets` → normalized, tradeable, volume-sorted markets, each tagged with a routing `category` and `yf_symbol`. Default = mappable index/crypto series. Add `--all` to scan every financial series (IPO/macro/single-stock/rates — heavy, many calls), `--series A,B` for specific series, or `--category <name>` to filter to one bucket.
-- Take the top candidates by volume (liquidity = realistic fills). Analyzing ~15-30 is plenty; you only have `slots` to fill. Spread across categories so you are not all-in on one underlying.
+- **Always run `--all`** to scan the full universe (IPO, earnings, macro, single-stock, rates, crypto, index). The default omits the most interesting event markets. Use `--series A,B` or `--category <name>` to narrow only when a specific theme was requested.
+- Take the top candidates by volume (liquidity = realistic fills). Analyzing ~15-30 is plenty; you only have `slots` to fill.
+- **Diversify across underlyings and categories.** A portfolio of 20 all-in on BTC is not 20 bets — it is one bet repeated. Aim for at least 3 distinct categories in the final trade list.
 
 ## Step 4 — Per-market analysis (classify, then route)
 Each market already carries a `category` (from `config.classify_market`). Route tools by it. **Only the first three categories have a quantitative anchor (a `yf_symbol` + a price strike); the rest are news-reasoning only and cannot be backtested — treat their estimates as lower-confidence.**
@@ -40,12 +41,13 @@ Each market already carries a `category` (from `config.classify_market`). Route 
 - **Resolve the yfinance symbol:** use the market's `yf_symbol` field when present (index/crypto). For single stocks, infer the symbol from the title. For `ipo`/`macro`/`rates_fx`/`other` there is no symbol — reason from news only.
 - **Model edge is necessary but NOT sufficient (backtest finding):** on pure price markets the lognormal model is well-calibrated but has **no tradeable edge over Kalshi's order book** — model-vs-market disagreements are mostly model error (adverse selection), so trading the raw model gap loses money. Only take a price-market bet when a *news catalyst* justifies an edge the market hasn't priced; treat `model_p` as a sanity check, not a signal on its own.
 - **Strike & expiry:** the normalized market gives `floor_strike`, `cap_strike`, `strike_type`, and `close_time`. Threshold markets have one strike (use `--strike` + `--dir above/below` per `strike_type`); range markets have both (use `--floor` + `--cap`).
-- Run the routed tools:
+- Run ALL routed tools — do not skip any:
   - `.venv/bin/python probability.py --ticker <yf> --strike <K> --dir above --expiry <YYYY-MM-DD>` (or `--floor/--cap` for ranges) → `model_p` anchor. Uses the latest **intraday** spot (check `spot_source`). For same-day markets `days_to_expiry=0` collapses the model to "is spot already past the strike," so lean on technicals/news for the actual call.
-  - `.venv/bin/python technical.py <yf>`
-  - `.venv/bin/python fundamentals.py <yf>` (only for single-stock/earnings)
+  - `.venv/bin/python technical.py <yf>` — always run for any market with a `yf_symbol`. For earnings/operational markets, use as a sentiment check: stock falling while operational metrics are strong is a yellow flag worth explaining.
+  - `.venv/bin/python fundamentals.py <yf>` — always run for single-stock and earnings markets. Revenue growth and margins directly inform whether operational thresholds (comp sales, margins) are likely to be met.
   - `.venv/bin/python news.py <yf or "free text"> --days 7` → news links.
-- **Read the news:** use the `WebFetch` tool on the most relevant links to read the actual articles. (Use Playwright MCP only if WebFetch fails on a page.)
+  - **Run these in parallel** (multiple Bash calls in one message) to save time — but never skip one to go faster.
+- **Read the news — no skipping:** use `WebFetch` on the most relevant links to read the actual articles. If `WebFetch` returns 400/403 (Google News RSS links commonly fail), immediately run `WebSearch` with a direct query to find the article on the publisher's site and fetch that URL instead. Do NOT cite a headline as a catalyst without having read the article body. Presenting unread headlines as evidence is worse than no evidence — it creates false confidence.
 
 ## Step 5 — Estimate & decide
 For each market produce: `p_yes` (your probability YES resolves true, 0-1), `confidence` (low/med/high), and a one-paragraph `rationale`.
@@ -60,6 +62,8 @@ For each market produce: `p_yes` (your probability YES resolves true, 0-1), `con
 
 ## Step 6 — Size & place (top `slots` by edge)
 Skip anything with `edge_cents <= 3` (fee buffer). Rank the rest by edge; for the top `slots`:
+
+**Correlation cap: at most 3 trades on the same underlying.** Group by `series_ticker` (for price markets) or by shared underlying concept (e.g., all "Anthropic IPO" markets, all BTC strikes). If the top-ranked list has more than 3 from the same group, drop the extras and fill those slots from the next-best edge in a different group. This prevents one thesis (BTC goes down, Claude loses the AI race) from consuming the whole portfolio.
 - `.venv/bin/python sizing.py --p <p_yes> --ask <yes_ask> --balance <remaining_cents>` → `count`. Skip if `count == 0`.
 - Decrement remaining balance by `count * yes_ask` so you don't over-deploy across the run.
 - Place: `.venv/bin/python kalshi.py order --ticker <t> --action buy --side yes --count <count> --price <yes_ask>` (add `--dry-run` if dry).
