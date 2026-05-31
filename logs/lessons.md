@@ -5,93 +5,104 @@ It is **rewritten** (not appended) by `/self-improve` from logged outcomes +
 Kalshi settlement ground-truth. Keep it tight — only durable, evidence-backed
 heuristics belong here.
 
-> Source note: 6 backtest rounds, all on KXBTCD + KXETHD (the only two series
-> the backtest tool can evaluate). 9 other series were probed — all returned 0
-> tradeable markets due to timing constraints, no settled history, or no
-> yfinance mapping. These lessons apply specifically to short-dated BTC/ETH
-> daily price-threshold markets. Not yet from live trades.
+> Source note: 7 backtest rounds across BTC/ETH/S&P/Nasdaq daily markets
+> (424 total markets evaluated after bug fix unlocking equity series).
+> Not yet from live trades — refresh from live outcomes once they accumulate.
 
 ## Backtestable universe
 
-Only **KXBTCD** (BTC-USD) and **KXETHD** (ETH-USD) produce enough settled
-markets with intraday data for meaningful backtesting (~82–90 per round within
-the 60-day intraday window). Every other series fails:
-- Index/Nasdaq dailies (KXINXU, KXNASDAQ100U): S&P/NDX settlement at 4pm ET
-  falls outside the usable yfinance 5-min intraday window.
-- Year-end range markets (KXINXY, KXNASDAQ100Y): haven't settled yet.
-- Comparison and BTC-vs-Gold markets: no settled history yet.
-- KXNASDAQ100: 3 markets evaluated, all far-OTM (model_p < 0.02), no trades.
+| Series | Asset | Markets | ROI | Brier skill | Use? |
+|---|---|---|---|---|---|
+| KXBTCD | BTC-USD | ~90/round | −42% | +0.48 | Yes — with corrections |
+| KXETHD | ETH-USD | ~80/round | −30% | +0.59 | Yes — preferred over BTC |
+| KXINXU | ^GSPC | ~105/round | **−6%** | +0.43 | **Yes — nearly breakeven** |
+| KXNASDAQ100U | ^NDX | ~149/round | −20% | **−0.13** | **No — worse than baseline** |
 
-**Implication for /invest:** index and Nasdaq price markets have no backtested
-calibration reference. Treat model_p for those as untested and require a
-stronger news catalyst before acting.
+Run default backtests as: `backtest.py --series KXBTCD,KXETHD,KXINXU --use-daily`
 
-## Calibration (BTC/ETH daily markets)
+KXNASDAQ100U is excluded: negative Brier skill means the model is *worse than
+guessing* for Nasdaq using previous-day close as spot. The ^NDX intraday
+volatility makes a 16-hour-old spot price too noisy to be useful. Don't trade
+KXNASDAQ100U on price model alone.
 
-Overall Brier 0.113 vs baseline 0.248, skill +0.54. Severely non-uniform:
+KXINXU markets use the previous trading day's close as spot (market opens at
+8pm ET, decision point is just after open, last NYSE bar is 4pm prior day).
+This 16-hour lag is acceptable for the low-vol, mean-reverting S&P.
 
-| model_p range | n  | model pred | realized YES | Corrected p_yes |
-|---|---|---|---|---|
-| 0.0 – 0.2 | 43 | 0.09 | 0.00 | model_p × 0.5 |
-| 0.2 – 0.4 | 42 | 0.30 | **0.12** | **model_p × 0.4** |
-| 0.4 – 0.6 | 36 | 0.51 | **0.72** | **model_p + 0.22** |
-| 0.6 – 0.8 | 42 | 0.69 | **0.93** | **model_p + 0.24** |
-| 0.8 – 1.0 |  9 | 0.89 | 0.89 | model_p (calibrated) |
+## Calibration — DIFFERENT by asset class
 
-**Always compute edge from corrected p_yes, never from raw model_p.**
+**BTC and ETH share a severe S-curve distortion:**
 
-## Directional filter — confirmed across 20 sample trades
-
-The calibration distortion is directional. Raw model edge for the *wrong side*
-is consistently negative real-edge:
-
-- **Every NO bet where model_p was 0.4–0.8 lost** (resolved YES; true p_yes
-  ~0.72–0.93). Samples: p=0.48 NO→lost 34¢, p=0.54 NO→lost 37¢, p=0.59 NO→lost 28¢.
-- **YES bets where model_p was 0.4–0.6 won when they hit** (true p_yes ~0.72).
-  Samples: p=0.40→+77¢, p=0.50→+74¢, p=0.51→+52¢.
-- **YES bets in 0.2–0.4 at cheap asks (~8–17¢) have marginal positive corrected
-  edge** (true p_yes ~0.12; edge = 12 − ask). At ask=8¢ edge is +4¢ (tight but
-  real). At ask=17¢ edge is −5¢ (skip). Don't treat this as a blanket YES ban —
-  use the corrected probability.
-
-**Practical rule:**
-
-| model_p | Corrected p_yes | Take YES if | Take NO if |
+| model_p | BTC realized | ETH realized | Corrected p_yes |
 |---|---|---|---|
-| 0.2–0.4 | model_p × 0.4 | yes_ask < corrected × 100 | no_ask < (1−corrected) × 100 |
-| 0.4–0.8 | model_p + 0.22 | yes_ask < corrected × 100 | rarely — corrected p_no is ~8–28%, need no_ask < that |
-| 0.8–1.0 | model_p | either side normally | either side normally |
+| 0.0–0.2 | 0.00 | 0.00 | model_p × 0.5 |
+| 0.2–0.4 | **0.10** | **0.15** | **model_p × 0.4** |
+| 0.4–0.6 | **0.61–0.73** | **0.79–0.85** | **model_p + 0.22** |
+| 0.6–0.8 | **0.96** | **0.86** | **model_p + 0.24** |
+| 0.8–1.0 | 1.00 | 0.86 | model_p (calibrated) |
 
-In practice for 0.4–0.8: corrected p_yes is 0.72–0.93, so NO is only worth
-buying if no_ask < 8–28¢. That's rare — most NO asks in this range are 30–60¢.
-Skip NO bets in this zone almost always.
+**S&P 500 (KXINXU) is nearly well-calibrated — different corrections apply:**
 
-- Never anchor on a **daily close** for a sub-day market. Always confirm
-  `probability.py` reports `spot_source: intraday`.
+| model_p | S&P realized | Verdict | Correction |
+|---|---|---|---|
+| 0.0–0.2 | 0.10 | Slightly underconfident | add ~5 points |
+| 0.2–0.4 | 0.22 | Good (pred 0.29) | minor adjust |
+| 0.4–0.6 | 0.56 | Good (pred 0.49) | minor adjust |
+| 0.6–0.8 | 0.70 | **Perfectly calibrated** | none |
+| 0.8–1.0 | **0.86** | **Overconfident (pred 0.94)** | **subtract 8 points** |
+
+The S-curve distortion does NOT apply to S&P. The only meaningful correction
+is: **when model_p > 0.8 for S&P, treat true p_yes as model_p − 0.08.**
+Those overconfident high-p trades are the main source of S&P's −6% ROI.
+If filtered out, S&P likely breaks even or is slightly profitable.
+
+**Always compute edge from corrected p_yes, not raw model_p.**
+
+## Directional filter (crypto only)
+
+Applies to BTC and ETH. Does NOT apply to S&P (which is well-calibrated
+across 0.2–0.8).
+
+| model_p | BTC/ETH: Take | BTC/ETH: Skip | S&P: Take |
+|---|---|---|---|
+| 0.0–0.2 | NO preferred | ~~YES~~ | Either (mild adjustment) |
+| 0.2–0.4 | NO only | ~~YES~~ | Either (minor adjust) |
+| 0.4–0.8 | YES only | ~~NO~~ | Either (well calibrated) |
+| 0.8–1.0 | Either | — | YES/NO with −8pt correction |
+
+For crypto in 0.4–0.8: corrected p_yes is 0.72–0.93, so NO only worth
+buying if no_ask < 7–28¢ (rare). Effectively skip all NO bets there.
 
 ## Signal patterns
 
-- **Model edge is necessary but NOT sufficient.** Raw model gap trades lost money
-  across all 6 rounds (ROI −29% to −49%). **Only take a price-market bet when a
-  news catalyst justifies the edge.** Corrected edge + catalyst = minimum bar.
-- The bigger the model/market disagreement with **no news to explain it**, the more
-  likely the market is right. Skip it.
-- ROI worsened over rounds as BTC trended down. Downtrend regimes increase
-  coin-flip noise on near-ATM daily markets — raise the edge threshold in
-  trending markets.
+- **Model edge is necessary but NOT sufficient** for crypto. All crypto series
+  lost money without a news catalyst. For S&P the model edge is more reliable
+  (−6% ROI, 62% hit rate) but still requires a catalyst to be confident.
+- The bigger the model/market gap with no news explanation, the more likely
+  the market is right. Skip it.
+- For S&P specifically: the high-probability trades (model_p > 0.8) are the
+  losers. Focus on mid-range S&P markets (model_p 0.4–0.8) which are calibrated.
 
-## Per-series
+## Per-series notes
 
-- **ETH > BTC.** ETH: Brier skill 0.589, ROI −33%. BTC: skill 0.487, ROI −49%.
-  Prefer ETH when both have similar opportunities.
-- Intraday data caps at ~90 markets per series (~60 days). `--per-series` above
-  100 adds nothing.
+- **ETH > BTC** for crypto. Similar calibration shape, but ETH Brier skill
+  0.59 vs BTC 0.48. Prefer ETH when opportunities are similar.
+- **S&P (KXINXU) is the best-performing series** at −6% ROI and 62% hit rate.
+  Add KXINXU to every default backtest run with `--use-daily`.
+- **KXNASDAQ100U: avoid.** Brier skill −0.13 (below baseline). Daily close
+  is too stale for Nasdaq volatility.
+- **KXINXU uses previous-day close as spot** (decision point is just after
+  8pm ET market open; last NYSE bar is 4pm that day). This is fine for S&P
+  but tag trades with spot_source='intraday' or 'daily' to track.
+- Intraday data caps at ~90 markets for crypto, ~105–149 for equity (~60d).
+  `--per-series` above 150 adds nothing.
 
 ## Sizing / edge-filter
 
-- Compute corrected edge = `corrected_p_yes × 100 − ask`. Use corrected_p_yes
-  from the table above, not raw model_p.
-- Skip if corrected edge ≤ 5¢.
-- Require a **news catalyst** for price markets in addition to corrected positive
-  edge.
+- For **crypto**: apply directional filter first; compute corrected edge
+  = corrected_p_yes × 100 − ask; skip if corrected edge ≤ 5¢.
+- For **S&P**: compute edge normally but subtract 8 points from model_p when
+  model_p > 0.8 before computing edge; skip model_p > 0.8 NO bets entirely.
+- Require a **news catalyst** for all price-market bets in addition to
+  corrected positive edge.
 - IPO / macro / event markets: no quant anchor, size conservatively, news only.
