@@ -1,0 +1,212 @@
+{
+  "session": "paper",
+  "date": "2026-05-30",
+  "bankroll_dollars": 2000,
+  "bankroll_cents": 200000,
+  "slot_cap": 10,
+  "slots_used": 5,
+  "total_deployed_cents": 63240,
+  "total_deployed_dollars": 632.40,
+  "note": "Hypothetical paper portfolio — not in the US, dry-run only. Revisit with /self-improve once markets resolve.",
+
+  "trades": [
+    {
+      "ticker": "KXMCD-26AUGCOMP-2.5",
+      "title": "Will McDonald's report Above 2.5% global comparable sales growth in Q2 2026?",
+      "category": "single_stock",
+      "side": "yes",
+      "yes_ask": 22,
+      "p_yes": 0.58,
+      "edge_cents": 36,
+      "count": 909,
+      "stake_cents": 19998,
+      "stake_dollars": 199.98,
+      "confidence": "med-high",
+      "close_time": "2026-09-04T11:00:00Z",
+      "rationale": "Q1 2026 global comps 3.8% (US 3.9%, IOM 3.9%). Q2 threshold 2.5% — needs 1.3-point deceleration to miss. Revenue growth 9.4%, FCF strong. Warning: stock -4.9% in 20d, below both MAs. Adjusted from 63% to 58% on stock weakness signal.",
+      "key_signals": {
+        "q1_2026_global_comps_pct": 3.8,
+        "q1_2026_us_comps_pct": 3.9,
+        "revenue_growth": 0.094,
+        "rsi": 56.3,
+        "pct_change_20d": -4.9,
+        "above_ma50": false,
+        "above_ma200": false,
+        "analyst_recommendation": "buy"
+      },
+      "resolve_by": "2026-09-04",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXLLM1-26DEC31-A",
+      "title": "Best AI in Dec 2026? — Claude: Anthropic",
+      "category": "other",
+      "side": "no",
+      "no_ask": 37,
+      "yes_ask": 64,
+      "p_yes": 0.45,
+      "edge_cents": 18,
+      "count": 540,
+      "stake_cents": 19980,
+      "stake_dollars": 199.80,
+      "confidence": "medium",
+      "close_time": "2026-12-31T15:00:00Z",
+      "rationale": "Market prices Claude at 64% to win best AI by Dec 2026. AI landscape is fragmented — Claude leads coding, Gemini leads reasoning, GPT leads agentic tasks. 7 months is an eternity in AI. Estimate 45% — market overconfident in single-model dominance.",
+      "key_signals": {
+        "claude_swebench_pro": 0.643,
+        "gemini_gpqa_diamond": 0.943,
+        "gpt55_terminal_bench": 0.827,
+        "verdict": "no single model wins May 2026"
+      },
+      "resolve_by": "2026-12-31",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXLLM1-26DEC31-GOOG",
+      "title": "Best AI in Dec 2026? — Gemini: Google",
+      "category": "other",
+      "side": "yes",
+      "yes_ask": 16,
+      "p_yes": 0.25,
+      "edge_cents": 9,
+      "count": 569,
+      "stake_cents": 9104,
+      "stake_dollars": 91.04,
+      "confidence": "low-medium",
+      "close_time": "2026-12-31T15:00:00Z",
+      "rationale": "Gemini 3.1 Pro leads hardest reasoning benchmarks (GPQA Diamond 94.3%, ARC-AGI-2 77.1%) at lowest major-lab price. If best AI weights reasoning, Gemini has a strong case. Market at 16% feels too low.",
+      "key_signals": {
+        "gemini_gpqa_diamond": 0.943,
+        "gemini_arc_agi2": 0.771,
+        "market_price_yes": 16
+      },
+      "resolve_by": "2026-12-31",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXLLM1-26DEC31-OAI",
+      "title": "Best AI in Dec 2026? — ChatGPT: OpenAI",
+      "category": "other",
+      "side": "yes",
+      "yes_ask": 14,
+      "p_yes": 0.22,
+      "edge_cents": 8,
+      "count": 521,
+      "stake_cents": 7294,
+      "stake_dollars": 72.94,
+      "confidence": "low-medium",
+      "close_time": "2026-12-31T15:00:00Z",
+      "rationale": "GPT-5.4 is the best all-rounder with the largest ecosystem. If best AI uses a composite or user preference metric, OpenAI has a strong argument. Market at 14% seems too low. Third leg of Claude-NO / Gemini-YES / GPT-YES position — hits 3-trade correlation cap on best-AI concept.",
+      "key_signals": {
+        "gpt55_terminal_bench": 0.827,
+        "verdict": "best all-rounder with largest ecosystem"
+      },
+      "resolve_by": "2026-12-31",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXIPOSPACEX-26JUL01",
+      "title": "When will SpaceX IPO? — Before Jul 1, 2026",
+      "category": "ipo",
+      "side": "no",
+      "no_ask": 3,
+      "yes_ask": 98,
+      "p_yes": 0.88,
+      "edge_cents": 9,
+      "count": 2288,
+      "stake_cents": 6864,
+      "stake_dollars": 68.64,
+      "confidence": "low",
+      "close_time": "2026-07-01T03:59:00Z",
+      "rationale": "SpaceX S-1 confirmed filed May 20. Roadshow June 8, pricing June 18-30, first trade late June. Market at 98% YES (IPO before Jul 1). Execution risk: pricing of June 28-30 could push first trading day to July 1+. Largest IPO in history adds complexity. Musk comments diverged from filing per CNBC. Estimate 88% YES — buying NO at 3c as a low-cost timing-risk hedge.",
+      "key_signals": {
+        "s1_filed": "2026-05-20",
+        "roadshow_start": "2026-06-08",
+        "pricing_window": "2026-06-18 to 2026-06-30",
+        "valuation_T": 2.0,
+        "raise_B": 75,
+        "top_headlines": [
+          "SpaceX S-1 confirmed filed May 20 2026 on SEC EDGAR",
+          "Roadshow June 8 pricing June 18-30 first trade late June",
+          "SpaceX skeptics: Musk comments diverge from IPO filing — CNBC"
+        ]
+      },
+      "resolve_by": "2026-07-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    }
+  ],
+
+  "skips": [
+    {
+      "ticker": "KXWEN-26AUGUSCOMP-0.0",
+      "title": "Will Wendy's report Above 0% US same-restaurant sales in Q2 2026?",
+      "yes_ask": 6,
+      "p_yes": 0.08,
+      "edge_cents": 2,
+      "reason": "Q1 US comps -7.8%. Edge only +2c — below 5c threshold. Market fairly priced."
+    },
+    {
+      "ticker": "KXMO-26JULCIGSHIP-13500000000.0",
+      "title": "Will Altria report Above 13.5B cigarette shipments in Q2 2026?",
+      "yes_ask": 98,
+      "p_yes": 0.82,
+      "edge_cents": 15,
+      "reason": "Q1 was 13.867B (above threshold) but -2.4% YoY declining. Estimate 82% YES vs market 98%. Edge for NO = +15c but insufficient baseline data (need Q2 2025 shipments) to confidently go against 98% consensus."
+    },
+    {
+      "ticker": "KXTAKEOVERACQWB-27JUN30-PSKY",
+      "title": "Will Paramount's takeover of Warner Brothers succeed before July 2027?",
+      "yes_ask": 83,
+      "p_yes": 0.80,
+      "edge_cents": -3,
+      "reason": "Shareholders approved April 2026, Q3 2026 close expected. Market 83%, my estimate 80%. No meaningful edge."
+    },
+    {
+      "ticker": "KXLLM1-26JUN06-ANTH",
+      "title": "Best AI in Jun 2026? — Claude: Anthropic",
+      "yes_ask": 99,
+      "p_yes": 0.96,
+      "edge_cents": -3,
+      "reason": "99% YES with 7 days to resolution. Agree Claude likely wins but no tradeable edge."
+    },
+    {
+      "ticker": "KXACQANNOUNCEEBAY-27JAN01-JAN01",
+      "title": "Will GameStop announce acquisition of eBay before Jan 1, 2027?",
+      "yes_ask": 19,
+      "p_yes": 0.14,
+      "edge_cents": 3,
+      "reason": "eBay rejected bid May 12. Edge for NO = +4c — below 5c threshold."
+    }
+  ],
+
+  "portfolio_summary": {
+    "trades": 5,
+    "skips": 5,
+    "total_deployed_dollars": 632.40,
+    "pct_bankroll_deployed": 31.6,
+    "categories": ["single_stock", "other", "other", "other", "ipo"],
+    "expected_pnl_cents": {
+      "KXMCD": 327,
+      "KXLLM1_claude_no": 97,
+      "KXLLM1_gemini": 51,
+      "KXLLM1_gpt": 42,
+      "KXIPOSPACEX_no": 206,
+      "total": 723
+    },
+    "correlation_groups": {
+      "best_ai_dec_2026": ["KXLLM1-26DEC31-A (NO)", "KXLLM1-26DEC31-GOOG (YES)", "KXLLM1-26DEC31-OAI (YES)"],
+      "note": "3 best-AI trades hit the correlation cap — no more added from this concept"
+    }
+  },
+
+  "self_improve_checklist": {
+    "KXMCD": "Resolve Sep 4 2026. Check: did Q2 global comps beat 2.5%? Was the stock-weakness warning predictive?",
+    "KXLLM1_best_ai": "Resolve Dec 31 2026. Check: which model won? Was market right to price Claude at 64%? Was fragmented-landscape thesis correct?",
+    "KXIPOSPACEX": "Resolve Jul 1 2026. Check: did SpaceX first-trade day fall before or after Jul 1? Was the 12% NO estimate reasonable?"
+  }
+}
