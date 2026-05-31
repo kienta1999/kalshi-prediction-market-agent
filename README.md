@@ -50,6 +50,30 @@ so they aren't price-backtestable — they go through the news/event layer (`new
 Skills live in `.claude/skills/invest/SKILL.md`, `.claude/skills/self-improve/SKILL.md`,
 and `.claude/skills/backtest/SKILL.md`.
 
+## Roadmap / next steps
+
+The deterministic quant core is well-tested. The **news→bet judgment** is the part that
+matters most and is hardest to test — and by nature, can only be tested out-of-sample: any
+historical market the model "remembers" is contaminated, so the only honest measure is forward
+calibration (log predictions now, score at settlement). `news_backtest.py` already gives an
+uncontaminated single-ticker test (blind package → fresh sub-agent → score vs outcome) for
+post-Aug-2025 events; the gaps below are about making that systematic.
+
+Ranked by value:
+
+1. **Paper-log scoreboard** (`paper_score.py`) — read every `logs/*-paper.json`, join each pick
+   to Kalshi settlement, fill the `actual_outcome`/`actual_p_yes` placeholders, and print
+   calibration (predicted vs realized) + hypothetical P&L. Turns the accumulating paper bets
+   into a real, scored track record — the missing half of the news→bet loop. Reuses the
+   settlement-join `/self-improve` already has; could be called from it. **Best bang for buck.**
+2. **Batch news-backtest runner** — loop `news_backtest.py` over settled 2026 event markets and
+   aggregate Brier score / calibration, segmented by category (IPO timing vs earnings-comps vs
+   AI-race). Ground truth grows as 2026 events resolve (SpaceX Jul 1, Chipotle Aug 21, MCD Sep 4…).
+3. **Log-write validation** — schema-check the `/invest` paper/decision write path so a malformed
+   portfolio can't be emitted silently (the kind of bug that orphaned half a paper log once).
+4. **Sell-side testing** — `sell_cron.py` exit logic (TP/SL) is the least-tested module; no
+   backtest of when to close vs hold.
+
 ## Setup
 
 ```bash
