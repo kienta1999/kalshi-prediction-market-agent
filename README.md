@@ -117,4 +117,5 @@ you exercise the whole flow without moving money — and works fully offline if 
 4. Drop `--dry-run`, place one small live bet, confirm the fill, then start `sell_cron.py`.
 
 
-claude --resume b060f89c-1079-4428-8bb8-da2238fe4f70
+Initial session: claude --resume b060f89c-1079-4428-8bb8-da2238fe4f70
+Improve backtest: claude --resume d47e670f-f08d-441a-a0df-a72a1e8ab6a6
