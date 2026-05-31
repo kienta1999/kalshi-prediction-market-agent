@@ -16,6 +16,7 @@ without hindsight), so treat it as a floor on the full pipeline, not the ceiling
 Usage:
   .venv/bin/python backtest.py
   .venv/bin/python backtest.py --series KXBTCD,KXINXU --per-series 200
+  .venv/bin/python backtest.py --series KXINXU,KXNASDAQ100U --use-daily
 """
 
 import argparse
@@ -59,21 +60,27 @@ def _yf_intraday(symbol: str) -> pd.DataFrame:
     return df
 
 
-def _spot_and_vol(daily: pd.DataFrame, intraday: pd.DataFrame, decision_dt: datetime):
+def _spot_and_vol(daily: pd.DataFrame, intraday: pd.DataFrame, decision_dt: datetime,
+                  allow_daily_fallback: bool = False):
     """Spot = last intraday bar strictly before the decision timestamp (no
-    lookahead); vol = trailing VOL_WINDOW daily log-returns. Returns (None, None)
-    if no intraday bar exists before the decision (market older than the 60d
-    intraday window) so we skip rather than fall back to a stale daily close."""
+    lookahead); vol = trailing VOL_WINDOW daily log-returns.
+
+    If no intraday bar exists (equity markets where the decision_dt lands before
+    NYSE open, or markets outside the 60-day intraday window) and
+    allow_daily_fallback=True, fall back to the previous day's daily close.
+    Returns (spot, sigma, spot_source) or (None, None, None) on failure."""
     cutoff = pd.Timestamp(decision_dt.date())
     prior = daily.loc[daily.index < cutoff, "Close"].dropna()
     if len(prior) < 30:
-        return None, None
+        return None, None, None
     sigma = _annual_vol(prior.iloc[-VOL_WINDOW:])
     dts = pd.Timestamp(decision_dt).tz_convert("UTC")
-    bars = intraday.loc[intraday.index < dts, "Close"].dropna() if not intraday.empty else []
-    if len(bars) == 0:
-        return None, None
-    return float(bars.iloc[-1]), sigma
+    bars = intraday.loc[intraday.index < dts, "Close"].dropna() if not intraday.empty else pd.Series([], dtype=float)
+    if len(bars) > 0:
+        return float(bars.iloc[-1]), sigma, "intraday"
+    if allow_daily_fallback and len(prior) > 0:
+        return float(prior.iloc[-1]), sigma, "daily"
+    return None, None, None
 
 
 def _decision_quote(candles: list[dict]):
@@ -93,11 +100,17 @@ def _decision_quote(candles: list[dict]):
 
 
 def backtest_market(client: KalshiClient, m: dict, daily: pd.DataFrame,
-                    intraday: pd.DataFrame) -> dict | None:
+                    intraday: pd.DataFrame, allow_daily_fallback: bool = False) -> dict | None:
     stype = m.get("strike_type")
+    # Normalise: treat greater_or_equal / less_or_equal identically to their
+    # strict variants — for a continuous distribution P(X >= K) ≈ P(X > K).
+    if stype in ("greater_or_equal",):
+        stype = "greater"
+    elif stype in ("less_or_equal",):
+        stype = "less"
     if stype not in ("greater", "less"):
         return None                                   # skip range/other for now
-    strike = m.get("floor_strike") if stype == "greater" else m.get("floor_strike")
+    strike = m.get("floor_strike") if stype == "greater" else m.get("cap_strike")
     if strike is None:
         return None
     open_ts, close_ts = _ts(m["open_time"]), _ts(m["close_time"])
@@ -112,7 +125,7 @@ def backtest_market(client: KalshiClient, m: dict, daily: pd.DataFrame,
         return None
 
     decision_dt = datetime.fromtimestamp(dec_ts, tz=timezone.utc)
-    s0, sigma = _spot_and_vol(daily, intraday, decision_dt)
+    s0, sigma, spot_source = _spot_and_vol(daily, intraday, decision_dt, allow_daily_fallback)
     if s0 is None:
         return None
     t = max(close_ts - dec_ts, 0) / SECONDS_PER_YEAR
@@ -143,6 +156,7 @@ def backtest_market(client: KalshiClient, m: dict, daily: pd.DataFrame,
         "edge": round(edge, 2), "traded": side is not None,
         "side": side, "entry": entry, "pnl": pnl,
         "horizon_h": round((close_ts - dec_ts) / 3600, 2),
+        "spot_source": spot_source,
     }
 
 
@@ -190,6 +204,10 @@ def main(argv=None) -> int:
     ap.add_argument("--per-series", type=int, default=150,
                     help="most-recent settled markets to test per series")
     ap.add_argument("--show", type=int, default=0, help="print N sample trade rows")
+    ap.add_argument("--use-daily", action="store_true",
+                    help="fall back to previous-day close when no intraday bar exists "
+                         "before the decision timestamp (enables equity/index series like "
+                         "KXINXU and KXNASDAQ100U; spot_source='daily' is tagged in output)")
     args = ap.parse_args(argv)
 
     client = KalshiClient()
@@ -211,7 +229,7 @@ def main(argv=None) -> int:
         for m in settled:
             m.setdefault("series_ticker", st)
             try:
-                r = backtest_market(client, m, hist, intraday)
+                r = backtest_market(client, m, hist, intraday, args.use_daily)
             except Exception as exc:  # noqa: BLE001
                 r = None
             if r:
@@ -219,6 +237,11 @@ def main(argv=None) -> int:
         per_series[st] = summarize(rows)
         per_series[st]["yf_symbol"] = sym
         per_series[st]["settled_seen"] = len(settled)
+        # report how many used daily fallback so results can be interpreted correctly
+        daily_count = sum(1 for r in rows if r.get("spot_source") == "daily")
+        if daily_count:
+            per_series[st]["spot_source_daily"] = daily_count
+            per_series[st]["spot_source_intraday"] = len(rows) - daily_count
         all_rows.extend(rows)
         print(f"# {st} ({sym}): {len(settled)} settled, {len(rows)} with tradeable quote",
               flush=True)
