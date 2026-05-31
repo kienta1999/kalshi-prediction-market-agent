@@ -19,12 +19,18 @@ Four flows:
 `/invest` only *opens* positions (up to a cap of 20 concurrent); the sell cron owns all exits.
 
 ### Key finding from backtesting
-On ~160 real settled BTC/ETH daily markets, the probability model is **well-calibrated**
-with an intraday spot (Brier 0.126 vs 0.249 baseline, skill +0.49) — **but trading the raw
-model-vs-market gap loses money** (ROI ≈ −15%). Kalshi's order book is more efficient than
-the model, so the biggest "edges" are mostly model error (adverse selection). **A price-only
-edge is necessary but not sufficient; a real bet needs a news catalyst the market hasn't
-priced.** This is encoded in `logs/lessons.md` and the `/invest` routing.
+On real settled daily markets, the probability model is **well-calibrated** with an intraday
+spot — **but trading the raw model-vs-market gap loses money**. Kalshi's order book is more
+efficient than the model, so the biggest "edges" are mostly model error (adverse selection).
+**A price-only edge is necessary but not sufficient; a real bet needs a news catalyst the
+market hasn't priced.** Per-asset calibration differs sharply: **S&P (KXINXU) is the best
+series** (skill +0.41), crypto is good-but-distorted (ETH > BTC), and **Nasdaq (KXNASDAQ100U)
+is genuinely below baseline** (skill −0.31) — avoid trading it. All encoded in
+`logs/lessons.md` and the `/invest` routing.
+
+The price model only covers index + crypto (yfinance-mapped). Kalshi's ~1,000 "single-stock"
+markets are earnings/KPI events (production, GMV, subscribers), **not** share-price thresholds,
+so they aren't price-backtestable — they go through the news/event layer (`news_backtest.py`).
 
 ## Modules
 
@@ -75,7 +81,11 @@ Run every Python tool via the venv from the project root:
 .venv/bin/python kalshi.py --dry-run order --ticker <T> --action buy --side yes --count 10 --price 47
 
 # Backtest the quant core against real settled markets (real intraday prices, no lookahead)
-.venv/bin/python backtest.py --series KXBTCD,KXETHD --per-series 150
+.venv/bin/python backtest.py --all-series --use-daily --per-series 150   # full price universe (index+crypto)
+.venv/bin/python backtest.py --series KXBTCD,KXETHD,KXINXU --use-daily   # a subset
+
+# Backtest the NEWS/event layer (IPO/macro) via a blind sub-agent — see /backtest skill
+.venv/bin/python news_backtest.py --ticker KXIPOSPACEX-26JUL01 --decision-date 2026-05-15 --query "SpaceX IPO"
 
 # Sell daemon
 .venv/bin/python sell_cron.py --once --dry-run   # evaluate, place nothing

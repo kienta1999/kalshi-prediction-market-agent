@@ -255,8 +255,8 @@ def main(argv=None) -> int:
         series_list = [s.strip() for s in args.series.split(",") if s.strip()]
 
     client = KalshiClient()
-    all_rows, per_series = [], {}
-    for st in args.series.split(","):
+    all_rows, per_series, warnings = [], {}, []
+    for st in series_list:
         sym = config.resolve_yf_symbol(st)
         if not sym:
             print(f"# {st}: no yfinance mapping, skipping", flush=True)
@@ -286,11 +286,23 @@ def main(argv=None) -> int:
         if daily_count:
             per_series[st]["spot_source_daily"] = daily_count
             per_series[st]["spot_source_intraday"] = len(rows) - daily_count
-        all_rows.extend(rows)
-        print(f"# {st} ({sym}): {len(settled)} settled, {len(rows)} with tradeable quote",
-              flush=True)
+        # data-integrity guard: exclude a broken-feed series from the overall
+        # aggregate so its garbage numbers aren't mistaken for a model property.
+        # (A bad-but-correct series like Nasdaq is NOT flagged here.)
+        warn = _feed_sanity(rows, hist) if rows else None
+        if warn:
+            per_series[st]["data_suspect"] = warn
+            warnings.append(f"{st} ({sym}): {warn}")
+            print(f"# {st} ({sym}): {len(rows)} rows — DATA SUSPECT, excluded from overall: {warn}",
+                  flush=True)
+        else:
+            all_rows.extend(rows)
+            print(f"# {st} ({sym}): {len(settled)} settled, {len(rows)} with tradeable quote",
+                  flush=True)
 
     out = {"overall": summarize(all_rows), "per_series": per_series}
+    if warnings:
+        out["data_warnings"] = warnings
     if args.show:
         out["samples"] = all_rows[: args.show]
     print(json.dumps(out, indent=2))

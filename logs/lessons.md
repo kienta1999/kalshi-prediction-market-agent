@@ -16,18 +16,23 @@ heuristics belong here.
 | KXBTCD | BTC-USD | ~90/round | −42% | +0.48 | Yes — with corrections |
 | KXETHD | ETH-USD | ~80/round | −30% | +0.59 | Yes — preferred over BTC |
 | KXINXU | ^GSPC | ~105/round | **−6%** | +0.43 | **Yes — nearly breakeven** |
-| KXNASDAQ100U | ^NDX | ~149/round | −20% | **−0.13** | **No — worse than baseline** |
+| KXNASDAQ100U | ^NDX | 120 | −35% | **−0.31** | **No — genuinely below baseline** |
 
-Run default backtests as: `backtest.py --series KXBTCD,KXETHD,KXINXU --use-daily`
+Run default backtests as: `backtest.py --all-series --use-daily`
+(`--all-series` = the full mappable price universe; index + crypto only.)
 
-KXNASDAQ100U is excluded: negative Brier skill means the model is *worse than
-guessing* for Nasdaq using previous-day close as spot. The ^NDX intraday
-volatility makes a 16-hour-old spot price too noisy to be useful. Don't trade
-KXNASDAQ100U on price model alone.
+KXNASDAQ100U is genuinely bad — **verified 2026-05-31 on a CORRECT ^NDX feed**
+(spot ~30,333 matching strikes ~30,270; the data guard did NOT flag it): Brier
+skill −0.31, hit rate 44%, ROI −35% over 120 markets. This is a real model
+failure, not a data artifact. (An earlier "wrong-S&P-scale-feed bug" hypothesis
+was FALSE and is discarded.) Likely cause: NDX is concentrated in ~7 mega-cap
+tech names, so its fatter, jumpier tails are mispriced by a single-day lognormal.
+Don't trade KXNASDAQ100U on the price model.
 
-KXINXU markets use the previous trading day's close as spot (market opens at
-8pm ET, decision point is just after open, last NYSE bar is 4pm prior day).
-This 16-hour lag is acceptable for the low-vol, mean-reverting S&P.
+S&P (KXINXU) by contrast is the best price series — verified same run: skill
++0.41, hit 67%, ROI −1% over 109 markets. Its spot is usually a real intraday
+bar (markets open ~8pm ET, after the 4pm close); the `spot_source: daily`
+fallback is rare. Don't assume "S&P = stale daily close."
 
 ## Calibration — DIFFERENT by asset class
 
@@ -87,13 +92,13 @@ buying if no_ask < 7–28¢ (rare). Effectively skip all NO bets there.
 
 - **ETH > BTC** for crypto. Similar calibration shape, but ETH Brier skill
   0.59 vs BTC 0.48. Prefer ETH when opportunities are similar.
-- **S&P (KXINXU) is the best-performing series** at −6% ROI and 62% hit rate.
-  Add KXINXU to every default backtest run with `--use-daily`.
-- **KXNASDAQ100U: avoid.** Brier skill −0.13 (below baseline). Daily close
-  is too stale for Nasdaq volatility.
-- **KXINXU uses previous-day close as spot** (decision point is just after
-  8pm ET market open; last NYSE bar is 4pm that day). This is fine for S&P
-  but tag trades with spot_source='intraday' or 'daily' to track.
+- **S&P (KXINXU) is the best-performing series** (skill +0.41, hit 67%, ROI −1%,
+  verified 2026-05-31). Include it in every backtest run with `--use-daily`.
+- **KXNASDAQ100U: avoid.** Skill −0.31 on a verified-correct ^NDX feed — a real
+  model failure (mega-cap concentration → fat tails), not a data artifact.
+- **Always check `data_warnings`** in backtest output: a `data_suspect` series
+  has a broken feed (flat/degenerate, or spot wildly off the strikes — e.g. a
+  geo-degraded feed run outside the US) and its numbers must not be trusted.
 - Intraday data caps at ~90 markets for crypto, ~105–149 for equity (~60d).
   `--per-series` above 150 adds nothing.
 
