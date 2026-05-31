@@ -138,12 +138,9 @@
       "resolve_by": "2026-07-01",
       "actual_outcome": null,
       "actual_p_yes": null
-    }
-  ],
-
-  ,
-  {
-    "ticker": "KXIPHONERELEASE-IPHONE18-27JAN01",
+    },
+    {
+      "ticker": "KXIPHONERELEASE-IPHONE18-27JAN01",
     "title": "Will Apple release iPhone 18 before Jan 1, 2027?",
     "category": "other",
     "side": "yes",
