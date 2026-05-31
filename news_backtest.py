@@ -37,9 +37,12 @@ import argparse
 import json
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
 from kalshi import KalshiClient, _num
 from news import fetch as news_fetch
+
+SCORES_LOG = Path(__file__).resolve().parent / "logs" / "news_backtest.jsonl"
 
 
 def _ts(iso: str) -> int:
@@ -81,11 +84,9 @@ def prepare(ticker: str, decision_date: str, query: str,
     from datetime import timedelta
     client = KalshiClient()
 
-    # find the market across all settled + active
-    series = "-".join(ticker.split("-")[:1]) if "-" in ticker else ticker
-    # try to derive series from ticker prefix
-    parts = ticker.split("-")
-    series = parts[0]
+    # series is the ticker prefix before the first hyphen
+    # (e.g. KXIPOSPACEX-26JUL01 -> KXIPOSPACEX)
+    series = ticker.split("-")[0]
 
     market = None
     # try active market first via get_market
@@ -165,12 +166,16 @@ def prepare(ticker: str, decision_date: str, query: str,
 
 
 def score(ticker: str, sub_agent_p: float, market_p: float,
-          result: str | None = None) -> dict:
-    """Compute calibration for one sub-agent estimate."""
+          result: str | None = None, persist: bool = True) -> dict:
+    """Compute calibration for one sub-agent estimate and (by default) append it
+    to logs/news_backtest.jsonl so assessments accumulate for the Step B4
+    feed-forward into lessons.md. Only rows WITH a known outcome are persisted —
+    pre-resolution dry runs are not, so the log stays a clean calibration record."""
     realized = None if result is None else (1 if result == "yes" else 0)
     brier_agent = ((sub_agent_p - realized) ** 2) if realized is not None else None
     brier_market = ((market_p - realized) ** 2) if realized is not None else None
-    return {
+    row = {
+        "ts": datetime.now(timezone.utc).isoformat(),
         "ticker": ticker,
         "sub_agent_p": sub_agent_p,
         "market_p": market_p,
@@ -184,6 +189,12 @@ def score(ticker: str, sub_agent_p: float, market_p: float,
         "edge_vs_market": (round((sub_agent_p - market_p) * 100, 1)
                            if market_p is not None else None),
     }
+    if persist and result is not None:
+        SCORES_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with SCORES_LOG.open("a") as fh:
+            fh.write(json.dumps(row) + "\n")
+        row["logged_to"] = str(SCORES_LOG)
+    return row
 
 
 def main(argv=None) -> int:

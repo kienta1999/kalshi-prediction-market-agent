@@ -21,7 +21,6 @@ Usage:
 
 import argparse
 import json
-import math
 from datetime import datetime, timezone
 
 import numpy as np
@@ -32,7 +31,6 @@ import config
 from kalshi import KalshiClient, _num
 from probability import _annual_vol, _p_above
 
-TRADING_DAYS = 252
 VOL_WINDOW = 252
 SECONDS_PER_YEAR = 365 * 24 * 3600
 TRADEABLE_LO, TRADEABLE_HI = 5, 95   # only "decide" where a real two-sided quote existed
@@ -151,6 +149,7 @@ def backtest_market(client: KalshiClient, m: dict, daily: pd.DataFrame,
 
     return {
         "ticker": m["ticker"], "stype": stype, "strike": strike,
+        "spot": round(s0, 2),
         "p_yes": round(p_yes, 4), "yes_ask": yes_ask, "no_ask": no_ask,
         "result": result, "realized_yes": realized_yes,
         "edge": round(edge, 2), "traded": side is not None,
@@ -158,6 +157,41 @@ def backtest_market(client: KalshiClient, m: dict, daily: pd.DataFrame,
         "horizon_h": round((close_ts - dec_ts) / 3600, 2),
         "spot_source": spot_source,
     }
+
+
+def _feed_sanity(rows: list[dict], daily: pd.DataFrame) -> str | None:
+    """Catch a corrupt/wrong price feed BEFORE its garbage calibration gets
+    reported as a model property. Running outside the US degrades the yfinance
+    index feed (flat/synthetic values), which is the main thing this guards.
+
+    Two checks:
+      1. degenerate feed: the daily close is ~flat over the recent window
+         (a synthetic/geo-degraded series);
+      2. scale mismatch: the spot used is wildly off the strikes being priced
+         (e.g. an index symbol silently returning the wrong index's level).
+
+    Returns a warning string if the feed looks broken, else None. NOTE: a
+    genuinely bad-but-correct series (e.g. Nasdaq, skill -0.31 on a verified
+    feed) is NOT flagged here — this only catches broken DATA, not a weak model.
+    """
+    closes = daily["Close"].dropna()
+    if len(closes) >= 30:
+        recent = closes.iloc[-30:]
+        if float(recent.mean()) and float(recent.std()) / float(recent.mean()) < 1e-4:
+            return (f"degenerate feed: last-30 close is ~flat at "
+                    f"{float(recent.iloc[-1]):.1f} (likely broken/synthetic data source)")
+    spots = np.array([r["spot"] for r in rows if r.get("spot")])
+    strikes = np.array([abs(r["strike"]) for r in rows if r.get("strike")])
+    if len(spots) and len(strikes):
+        med_spot = float(np.median(spots))
+        med_strike = float(np.median(strikes))
+        if med_spot > 0:
+            ratio = med_strike / med_spot
+            if ratio > 2.0 or ratio < 0.5:
+                return (f"scale mismatch: median spot {med_spot:.0f} vs median strike "
+                        f"{med_strike:.0f} (ratio {ratio:.2f}) — likely WRONG SYMBOL/feed; "
+                        f"results untrustworthy")
+    return None
 
 
 def summarize(rows: list[dict]) -> dict:
@@ -201,6 +235,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Backtest vs real settled Kalshi markets")
     ap.add_argument("--series", default="KXBTCD,KXINXU,KXETHD",
                     help="comma-separated Kalshi series tickers")
+    ap.add_argument("--all-series", action="store_true",
+                    help="ignore --series and backtest EVERY mappable price series "
+                         "(all index + crypto series in config.SERIES_TO_YF). This is the "
+                         "full price-model universe; single stocks are earnings events with "
+                         "no price model and are not included.")
     ap.add_argument("--per-series", type=int, default=150,
                     help="most-recent settled markets to test per series")
     ap.add_argument("--show", type=int, default=0, help="print N sample trade rows")
@@ -209,6 +248,11 @@ def main(argv=None) -> int:
                          "before the decision timestamp (enables equity/index series like "
                          "KXINXU and KXNASDAQ100U; spot_source='daily' is tagged in output)")
     args = ap.parse_args(argv)
+
+    if args.all_series:
+        series_list = sorted(set(config.SERIES_TO_YF))
+    else:
+        series_list = [s.strip() for s in args.series.split(",") if s.strip()]
 
     client = KalshiClient()
     all_rows, per_series = [], {}
