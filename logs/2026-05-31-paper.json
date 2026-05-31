@@ -1,0 +1,195 @@
+{
+  "session": "paper",
+  "date": "2026-05-31",
+  "bankroll_dollars": 1000,
+  "bankroll_cents": 100000,
+  "slot_cap": 10,
+  "slots_used": 4,
+  "total_deployed_cents": 24899,
+  "total_deployed_dollars": 248.99,
+  "note": "Hypothetical paper portfolio - dry-run only. Started from $1000 bankroll (not live balance). Only 4 markets cleared the genuine-edge bar; slots are a ceiling, not a target. Revisit with /self-improve once markets resolve.",
+
+  "trades": [
+    {
+      "ticker": "KXTAKEOVERACQWB-27JUN30-PSKY",
+      "title": "Will Paramount's takeover of Warner Brothers succeed Before July 2027?",
+      "category": "other",
+      "side": "yes",
+      "yes_ask": 83,
+      "p_yes": 0.90,
+      "edge_cents": 7,
+      "count": 120,
+      "stake_cents": 9960,
+      "stake_dollars": 99.60,
+      "confidence": "med-high",
+      "close_time": "2027-07-01T03:59:00Z",
+      "rationale": "Signed definitive merger ($31/sh cash). WBD shareholders approved overwhelmingly Apr 23 2026. HSR antitrust waiting period expired Feb 19 2026 (US cleared), German clearance done, $47B equity financing committed by Ellison family/RedBird. Mgmt expects close in Q3 2026 (by end Sept), giving a full year of buffer to the July 2027 deadline. Residual ~10% risk is FCC license transfers / EU / other intl regulatory. p~0.90 vs market 83 -> +7c edge. Highest-conviction bet; sized to the half-Kelly 10% cap.",
+      "key_signals": {
+        "merger_type": "definitive, all-cash $31/sh",
+        "shareholder_vote": "approved overwhelmingly Apr 23 2026",
+        "hsr_status": "expired Feb 19 2026 (US antitrust cleared)",
+        "financing": "$47B equity committed (Ellison/RedBird)",
+        "expected_close": "Q3 2026",
+        "ticking_fee": "$0.25/sh/qtr if not closed by Sep 30 2026"
+      },
+      "resolve_by": "2027-07-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXIPO-26-ANTHROPIC",
+      "title": "Who will IPO before 2027? - Anthropic",
+      "category": "ipo",
+      "side": "no",
+      "no_ask": 23,
+      "yes_ask": 79,
+      "p_yes": 0.70,
+      "edge_cents": 7,
+      "count": 197,
+      "stake_cents": 4531,
+      "stake_dollars": 45.31,
+      "confidence": "low-med",
+      "close_time": "2027-01-01T04:59:00Z",
+      "rationale": "NO bet. As of late May 2026 Anthropic had NOT filed an S-1 (even confidentially), while rival OpenAI filed May 22. An Oct 2026 internal target is tight without a filing, leaving meaningful risk of slipping into 2027. Strong momentum ($44B annualized run-rate, first operating profit guided Q2 2026, $380B Series G, banks lined up) keeps p(IPO before 2027) around 0.70. NO at 23 -> p_no 0.30 -> +7c edge. Sized below cap given IPO-timing uncertainty.",
+      "key_signals": {
+        "s1_filed": false,
+        "openai_s1_filed": "2026-05-22 (ahead of Anthropic)",
+        "internal_target": "Oct 2026",
+        "run_rate": "$44B annualized",
+        "valuation": "$380B (Series G, Feb 2026)"
+      },
+      "resolve_by": "2027-01-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXIPHONERELEASE-IPHONE18-27JAN01",
+      "title": "Will Apple release iPhone 18 before Jan 1, 2027?",
+      "category": "other",
+      "side": "no",
+      "no_ask": 85,
+      "yes_ask": 16,
+      "p_yes": 0.10,
+      "edge_cents": 5,
+      "count": 58,
+      "stake_cents": 4930,
+      "stake_dollars": 49.30,
+      "confidence": "medium",
+      "close_time": "2027-01-01T04:59:00Z",
+      "rationale": "NO bet. Base iPhone 18 is delayed to spring 2027 per multiple May 2026 leaks; only the iPhone 18 Pro / Pro Max / first foldable ship in Sept 2026. The sibling strike 'before October' trades at just 12c, which confirms the market resolves on the BASE model (if the Pro counted, before-October would be ~85c). So p(base iPhone 18 ships in 2026) ~0.10. NO at 85 -> +5c edge. Deliberately sized below the half-Kelly cap because mis-reading the resolution rule (if Pro counts) loses the full 85c.",
+      "key_signals": {
+        "base_model_launch": "spring 2027",
+        "pro_foldable_launch": "Sept 2026",
+        "sibling_before_oct_price": 12,
+        "interpretation": "market prices base-model resolution"
+      },
+      "resolve_by": "2027-01-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXACQANNOUNCEEBAY-27JAN01-JAN01",
+      "title": "Will GameStop announce acquisition of eBay before Jan 1, 2027?",
+      "category": "other",
+      "side": "no",
+      "no_ask": 83,
+      "yes_ask": 18,
+      "p_yes": 0.11,
+      "edge_cents": 6,
+      "count": 66,
+      "stake_cents": 5478,
+      "stake_dollars": 54.78,
+      "confidence": "low-med",
+      "close_time": "2027-01-01T04:59:00Z",
+      "rationale": "NO bet. eBay's board rejected GameStop's $125/sh (~$56-70B) proposal on May 12 2026 as 'neither credible nor attractive', citing financing-plan uncertainty, operational risk and GameStop governance. After a firm board rejection the path to an announced/agreed acquisition by end-2026 is narrow; GameStop holds only a ~5% economic stake. p~0.11. NO at 83 -> p_no 0.89 -> +6c edge.",
+      "key_signals": {
+        "rejected": "May 12 2026",
+        "rejection_reason": "not credible/attractive; financing & governance doubts",
+        "offer": "$125/sh, 50% cash 50% stock",
+        "gme_stake": "~5% economic"
+      },
+      "resolve_by": "2027-01-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    }
+  ],
+
+  "skips": [
+    {
+      "ticker": "KXIPOSPACEX-26JUL01",
+      "title": "When will SpaceX IPO? - Before Jul 1, 2026",
+      "yes_ask": 97,
+      "p_yes": 0.95,
+      "edge_cents": -2,
+      "reason": "S-1 filed May 20, roadshow ~Jun 4, pricing ~Jun 11, trading ~Jun 12 — ~3wk buffer to Jul 1. p~0.95 vs market 97. No edge either side (NO at 4 needs p_no>0.04)."
+    },
+    {
+      "ticker": "KXMCD-26AUGCOMP-2.5",
+      "title": "Will McDonald's report Above 2.5% global comparable sales Q2 2026?",
+      "yes_ask": 18,
+      "p_yes": 0.20,
+      "edge_cents": -2,
+      "reason": "Management explicitly guided Q2 to a meaningful deceleration from Q1's 3.9%; April comps slightly negative (tough Minecraft promo comp). Market correctly prices ~1.8% median comp. My prior-run 58% estimate was wrong — the market knew the guidance. No edge."
+    },
+    {
+      "ticker": "KXINXPOS-26DEC31H1900-T6845.5",
+      "title": "Will the S&P 500 be above 6845.5 (positive growth) on Dec 31, 2026?",
+      "yes_ask": 76,
+      "model_p": 0.8585,
+      "p_yes": 0.78,
+      "edge_cents": 2,
+      "reason": "Spot 7581, strike at 2025 close. model_p 0.86 is exactly the S&P model_p>0.8 'loser zone' lessons flag; corrected p_yes 0.78 (subtract 8pts). Edge +2 below threshold, no catalyst. Lessons say skip."
+    },
+    {
+      "ticker": "KXTSLA-26JULDELIV-450000.0",
+      "title": "Will Tesla report above 450000 deliveries Q2 2026?",
+      "yes_ask": 40,
+      "p_yes": 0.35,
+      "edge_cents": -5,
+      "reason": "Considered a NO on over-optimistic recovery, but Europe registrations +46-67% YoY (best week of Q2 in late May), China resilient; recovery from Q1's 358k is real and corroborated by both Kalshi and Polymarket (450-475k mode at 34%). No catalyst to fade a liquid market — lessons warn against it. Skip."
+    },
+    {
+      "ticker": "KXSPACEXCOUNT-26B-160",
+      "title": "How many launches will SpaceX have in 2026? - Above 160",
+      "yes_ask": 41,
+      "p_yes": null,
+      "edge_cents": null,
+      "reason": "Resolution ambiguous: Falcon-only (~150 pace -> NO on high strikes) vs Falcon+Starship (~180 -> YES on them). Bet direction flips entirely on the counting rule, which could not be confirmed (Kalshi rate-limited). Skip the whole launch-count ladder."
+    },
+    {
+      "ticker": "KXLLM1-26DEC31-A",
+      "title": "Best AI in Dec 2026? - Claude (Anthropic)",
+      "yes_ask": 64,
+      "p_yes": 0.60,
+      "edge_cents": -4,
+      "reason": "Resolves on an undefined 'best AI' metric over a 7-month horizon. Anthropic is strong ($44B run-rate, coding lead) so 64% may be fair-to-low. No tradeable edge on an ambiguous resolution metric."
+    }
+  ],
+
+  "portfolio_summary": {
+    "trades": 4,
+    "skips": 6,
+    "total_deployed_dollars": 248.99,
+    "pct_bankroll_deployed": 24.9,
+    "categories": {
+      "other": 3,
+      "ipo": 1
+    },
+    "correlation_note": "The 3 'other' bets are independent theses: Paramount/WB is a deal-COMPLETES bet, while GameStop/eBay is a deal-DOESN'T-happen bet and iPhone 18 is a product-timing bet — low mutual correlation despite the shared Kalshi category label. Diversification was limited because genuine edge this scan clustered in event/M&A/IPO markets; price markets (S&P, Tesla) and single-stock comps (MCD) were correctly priced or in lessons' avoid zones.",
+    "expected_pnl_cents": {
+      "KXTAKEOVERACQWB_paramount_yes": 840,
+      "KXIPO_anthropic_no": 1379,
+      "KXIPHONERELEASE_no": 290,
+      "KXACQANNOUNCEEBAY_no": 396,
+      "total": 2905
+    }
+  },
+
+  "self_improve_checklist": {
+    "KXTAKEOVERACQWB_jul2027": "Resolve by Jul 1 2027 (likely closes Q3 2026). Did Paramount/WB close? Was 83->90 the right read on a shareholder-approved, HSR-cleared deal?",
+    "KXIPO_anthropic_2027": "Resolve Jan 1 2027. Did Anthropic IPO in 2026? Was the 'no S-1 by June = slip risk' thesis right vs the strong-momentum case?",
+    "KXIPHONERELEASE_2027": "Resolve Jan 1 2027. CRITICAL: how did Kalshi define 'iPhone 18' — base model or did the Sept-2026 Pro count? This is the key resolution-criteria test; the sibling 12c strike implied base-model.",
+    "KXACQANNOUNCEEBAY_2027": "Resolve Jan 1 2027. Did GameStop announce/agree an eBay acquisition after the May rejection? Was 18% too rich?",
+    "lesson_confirmations": "MCD: market correctly priced guided Q2 deceleration — confirms 'big unexplained gap => market right'. S&P: model_p>0.8 loser-zone skip applied. Tesla: declined to fade a liquid market without a catalyst."
+  }
+}

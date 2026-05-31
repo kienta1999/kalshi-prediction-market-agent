@@ -14,5 +14,10 @@ env/
 # Logs (runtime trade journal — keep lessons.md tracked, ignore raw jsonl)
 logs/*.jsonl
 
+# paper-invest runtime state: concurrency lock + once-per-day markers + transcripts
+logs/.paper-invest.lock
+logs/.*-paper.done
+logs/*-paper.run.log
+
 # OS
 .DS_Store
