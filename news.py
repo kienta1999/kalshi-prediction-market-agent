@@ -68,19 +68,55 @@ def _from_google_news(query: str, days: int, cutoff) -> list[dict]:
     return out
 
 
-def fetch(term: str, days: int = 7, is_query: bool = False) -> dict:
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+def fetch(term: str, days: int = 7, is_query: bool = False,
+          before: str | None = None, after: str | None = None) -> dict:
+    """Fetch news links. Pass before/after (YYYY-MM-DD) for historical windows.
+
+    When before/after are set, days is computed from the window width and
+    the search is anchored to `before` rather than now. Results are also
+    client-side filtered to [after, before] so the caller gets a clean
+    time-bounded set (useful for blind backtesting where lookahead must be
+    prevented).
+    """
+    before_dt = (datetime.fromisoformat(before).replace(tzinfo=timezone.utc)
+                 if before else datetime.now(timezone.utc))
+    after_dt = (datetime.fromisoformat(after).replace(tzinfo=timezone.utc)
+                if after else before_dt - timedelta(days=days))
+
+    # Google News `when:Nd` is relative to now; for historical windows inject
+    # explicit date operators into the query instead.
+    days_window = max(1, (before_dt - after_dt).days + 1)
+
     links: list[dict] = []
     if not is_query:
-        links += _from_yfinance(term, cutoff)
-    links += _from_google_news(term, days, cutoff)
+        links += _from_yfinance(term, after_dt)
+    links += _from_google_news(
+        f"{term} after:{after_dt.strftime('%Y-%m-%d')} before:{before_dt.strftime('%Y-%m-%d')}",
+        days_window, after_dt,
+    )
+    # client-side filter: keep only articles strictly before `before_dt`
+    filtered = []
+    for lnk in links:
+        pub = lnk.get("published")
+        if pub:
+            try:
+                pub_dt = datetime.fromisoformat(pub)
+                if pub_dt.tzinfo is None:
+                    pub_dt = pub_dt.replace(tzinfo=timezone.utc)
+                if pub_dt >= before_dt:
+                    continue  # future of the decision point — skip
+            except ValueError:
+                pass
+        filtered.append(lnk)
+
     # de-dupe by url
     seen, deduped = set(), []
-    for l in links:
-        if l["url"] and l["url"] not in seen:
-            seen.add(l["url"])
-            deduped.append(l)
-    return {"term": term, "days": days, "count": len(deduped), "links": deduped}
+    for lnk in filtered:
+        if lnk["url"] and lnk["url"] not in seen:
+            seen.add(lnk["url"])
+            deduped.append(lnk)
+    return {"term": term, "before": before, "after": after,
+            "count": len(deduped), "links": deduped}
 
 
 def main(argv=None) -> int:
@@ -89,9 +125,13 @@ def main(argv=None) -> int:
     p.add_argument("--days", type=int, default=7)
     p.add_argument("--query", action="store_true",
                    help="treat term as a free-text search, skip yfinance")
+    p.add_argument("--before", default=None,
+                   help="YYYY-MM-DD upper bound (exclusive) — for historical windows")
+    p.add_argument("--after", default=None,
+                   help="YYYY-MM-DD lower bound (inclusive) — for historical windows")
     args = p.parse_args(argv)
     try:
-        out = fetch(args.term, args.days, args.query)
+        out = fetch(args.term, args.days, args.query, args.before, args.after)
     except Exception as exc:  # noqa: BLE001
         out = {"term": args.term, "error": str(exc)}
     print(json.dumps(out, indent=2))
