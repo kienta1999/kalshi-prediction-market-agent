@@ -17,7 +17,9 @@ Read `logs/lessons.md`. Apply its heuristics to every probability estimate and t
 ## Step 2 — Budget
 - `.venv/bin/python kalshi.py balance` → bankroll (cents).
 - `.venv/bin/python kalshi.py positions` → count open `market_positions`.
-- `slots = 20 - open_positions`. If `slots <= 0`, stop and report "at position cap".
+- Compute slot cap from bankroll: `slot_cap = min(40, max(10, bankroll_dollars // 250))`. The $250 divisor is a rough average position size — actual bets are sized by half-Kelly and will vary widely (a high-edge trade gets much more than a marginal one). The formula just sets a diversification ceiling. Examples: $2.5k → 10 slots, $5k → 20, $10k → 40, $20k+ → still 40 (half-Kelly naturally sizes up each bet as bankroll grows).
+- `slots = slot_cap - open_positions`. If `slots <= 0`, stop and report "at position cap".
+- **Slots are a ceiling, not a target.** If only 6 markets have genuine edge today, place 6 trades. Never scrape weak opportunities to fill unused slots — scan again tomorrow.
 
 ## Step 3 — Candidate markets
 - **Always run `--all`** to scan the full universe (IPO, earnings, macro, single-stock, rates, crypto, index). The default omits the most interesting event markets. Use `--series A,B` or `--category <name>` to narrow only when a specific theme was requested.
@@ -61,7 +63,7 @@ For each market produce: `p_yes` (your probability YES resolves true, 0-1), `con
 ```
 
 ## Step 6 — Size & place (top `slots` by edge)
-Skip anything with `edge_cents <= 3` (fee buffer). Rank the rest by edge; for the top `slots`:
+Skip anything with `edge_cents <= 5`. Rank the rest by edge; for the top `slots`:
 
 **Correlation cap: at most 3 trades on the same underlying.** Group by `series_ticker` (for price markets) or by shared underlying concept (e.g., all "Anthropic IPO" markets, all BTC strikes). If the top-ranked list has more than 3 from the same group, drop the extras and fill those slots from the next-best edge in a different group. This prevents one thesis (BTC goes down, Claude loses the AI race) from consuming the whole portfolio.
 - `.venv/bin/python sizing.py --p <p_yes> --ask <yes_ask> --balance <remaining_cents>` → `count`. Skip if `count == 0`.
