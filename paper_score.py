@@ -10,6 +10,8 @@ by construction.
 
 Usage:
   python paper_score.py                 # report (prints JSON)
+  python paper_score.py --mark          # also mark pending trades to the live
+                                        # book (unrealized P&L at current bid)
   python paper_score.py --write         # also fill actual_outcome/actual_p_yes
                                         # placeholders in the paper logs
   python paper_score.py --use-fixtures  # offline (fixture settlement data)
@@ -21,7 +23,7 @@ import sys
 from pathlib import Path
 
 import config
-from kalshi import KalshiClient, KalshiError
+from kalshi import KalshiClient, KalshiError, normalize_market
 
 SETTLE_CHUNK = 20  # tickers per get_settled call
 
@@ -98,6 +100,30 @@ def score_trade(trade: dict, result: str | None) -> dict:
     return row
 
 
+def mark_to_market(client: KalshiClient, rows: list[dict]) -> None:
+    """Annotate pending rows with the live book: what the position could be
+    sold for right now (the side's bid) and the unrealized P&L vs entry."""
+    quotes: dict[str, dict] = {}
+    for r in rows:
+        if r["status"] != "pending" or r["ticker"] in quotes:
+            continue
+        try:
+            quotes[r["ticker"]] = normalize_market(
+                client.get_market(r["ticker"]).get("market", {}))
+        except KalshiError as exc:
+            print(f"mark failed for {r['ticker']}: {exc}", file=sys.stderr)
+    for r in rows:
+        q = quotes.get(r["ticker"])
+        if r["status"] != "pending" or not q:
+            continue
+        bid = q.get("yes_bid") if r["side"] == "yes" else q.get("no_bid")
+        if bid is None and r["side"] == "no" and q.get("yes_ask") is not None:
+            bid = 100 - q["yes_ask"]  # no_bid implied by the yes ask
+        r["mark_cents"] = bid
+        if bid is not None and r.get("entry_cents") is not None and r.get("count"):
+            r["unrealized_pnl_cents"] = r["count"] * (bid - r["entry_cents"])
+
+
 def summarize(rows: list[dict]) -> dict:
     settled = [r for r in rows if r["status"] == "settled"]
     scored = [r for r in settled if "brier" in r and "market_brier" in r]
@@ -106,6 +132,14 @@ def summarize(rows: list[dict]) -> dict:
         "n_settled": len(settled),
         "n_pending": len(rows) - len(settled),
     }
+    marked = [r for r in rows if "unrealized_pnl_cents" in r]
+    if marked:
+        summary["n_marked"] = len(marked)
+        summary["unrealized_pnl_cents"] = sum(r["unrealized_pnl_cents"] for r in marked)
+        m_staked = sum(r.get("stake_cents") or 0 for r in marked)
+        if m_staked:
+            summary["unrealized_roi"] = round(
+                summary["unrealized_pnl_cents"] / m_staked, 4)
     if not settled:
         return summary
 
@@ -147,6 +181,8 @@ def write_back(path: Path, doc: dict, settlement: dict[str, str]) -> int:
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="Score paper portfolios vs Kalshi settlement")
+    p.add_argument("--mark", action="store_true",
+                   help="mark pending trades to the live book (unrealized P&L)")
     p.add_argument("--write", action="store_true",
                    help="fill actual_outcome/actual_p_yes in the paper logs")
     p.add_argument("--use-fixtures", action="store_true", help="offline fixture reads")
@@ -163,11 +199,18 @@ def main(argv=None) -> int:
     client = KalshiClient(dry_run=args.dry_run or None, use_fixtures=args.use_fixtures)
     settlement = fetch_settlement(client, tickers)
 
-    portfolios, all_rows = [], []
+    per_file, all_rows = [], []
     for path, doc in files:
         rows = [score_trade(t, settlement.get(t.get("ticker")))
                 for t in doc.get("trades", [])]
         all_rows.extend(rows)
+        per_file.append((path, doc, rows))
+
+    if args.mark:
+        mark_to_market(client, all_rows)  # row dicts are shared with per_file
+
+    portfolios = []
+    for path, doc, rows in per_file:
         entry = {
             "file": path.name,
             "date": doc.get("date"),

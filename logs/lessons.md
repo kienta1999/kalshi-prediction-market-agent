@@ -111,3 +111,32 @@ buying if no_ask < 7–28¢ (rare). Effectively skip all NO bets there.
 - Require a **news catalyst** for all price-market bets in addition to
   corrected positive edge.
 - IPO / macro / event markets: no quant anchor, size conservatively, news only.
+- Keep the ≤5¢-edge skip even at high conviction (2026-06-10: Musk-$1T YES at
+  90 with p≈0.94 was correctly skipped at +4¢ — right thesis, no room).
+
+## Event-market interim observations (mark-to-market, NOT settlement-verified)
+
+> Source: `paper_score.py --mark` 2026-06-10 on the 17 pre-Jun-10 paper trades.
+> 0/22 paper trades settled; these are unrealized marks at the bid (wide spreads
+> overstate losses). Treat as provisional process rules, not calibration facts.
+> Re-derive from settlement once markets resolve (first wave: Jun–Sep 2026).
+
+Book stood at **−24% unrealized** (−$398 on $1,649 deployed). The losers share
+one shape — **fading market consensus on narrative, not hard facts**:
+
+- KXIPO-26-ANTHROPIC NO@23 → YES ran to 91 (mark 9). Faded a rising IPO market;
+  the 2026 IPO wave (SpaceX priced, OpenAI S-1 filed) was knowable.
+- KXLLM1-A (Claude best AI) NO@37 → YES 64→72. Faded momentum twice.
+- KXMCD comps YES@22 → 11; KXCMG-REST YES@51 → 25. Model-style disagreements
+  with the market on KPI thresholds, no dated catalyst.
+- SpaceX-IPO NO@3 (p_no 0.12 tail bet) → 0. Tail lottery, behaved as priced.
+
+Provisional rules (applied in the 2026-06-10 run):
+
+1. **Event bets need a hard dated fact** (filing date, regulatory clock,
+   reported production/comps numbers), not disagreement with consensus.
+2. **Don't re-fade momentum**: a >10–15¢ move against the thesis with no
+   contradicting hard news is information — stand aside, don't double the fade.
+3. **Sub-10¢ tail bets**: expect total loss; size to what you'd burn.
+4. Diversify event theses; the May 30 book concentrated in "AI-race/IPO
+   skepticism" and one correlated narrative drove most of the drawdown.
