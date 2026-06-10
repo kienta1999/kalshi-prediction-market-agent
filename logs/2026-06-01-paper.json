@@ -1,0 +1,94 @@
+{
+  "session": "paper",
+  "date": "2026-06-01",
+  "bankroll_dollars": 1000,
+  "bankroll_cents": 100000,
+  "slot_cap": 10,
+  "slots_used": 3,
+  "total_deployed_cents": 23651,
+  "total_deployed_dollars": 236.51,
+  "note": "Hypothetical paper portfolio - dry-run only. Started from $1000 bankroll (not live balance). Only 3 markets cleared the genuine-edge bar (1 M&A, 1 launch-count event, 1 IPO-timing); slots are a ceiling, not a target. Index/same-day S&P and Dec year-end ranges skipped per lessons (no tradeable edge without a news catalyst). Revisit with /self-improve once markets resolve.",
+
+  "trades": [
+    {
+      "ticker": "KXTAKEOVERACQWB-27JUN30-PSKY",
+      "title": "Will Paramount's takeover of Warner Brothers succeed Before July 2027?",
+      "category": "other",
+      "side": "yes",
+      "yes_ask": 85,
+      "p_yes": 0.92,
+      "edge_cents": 7,
+      "count": 117,
+      "stake_cents": 9945,
+      "stake_dollars": 99.45,
+      "confidence": "med-high",
+      "close_time": "2027-07-01T03:59:00Z",
+      "rationale": "Definitive all-cash $31/sh merger. HSR waiting period expired Feb 19 2026 (the biggest US antitrust hurdle, now cleared), German FDI clearance Jan 27, DOJ Second Request complied Dec 23 2025, WBD shareholder vote completed early spring 2026, executed via tender offer (SC TO-T). Management expects close Q3 2026 with a $0.25/sh/qtr ticking fee after Sep 30 2026 - and this market resolves by July 2027, a ~12-month buffer. The Netflix counter-bid is priced out (4c). Residual ~8% risk is FCC broadcast-license transfers and remaining international clearances. p~0.92 vs 85c -> +7c edge. Highest-conviction, lowest-variance bet; sized to the half-Kelly 10% cap.",
+      "key_signals": {
+        "merger_type": "definitive, all-cash $31/sh",
+        "hsr_status": "waiting period expired Feb 19 2026 (US antitrust cleared)",
+        "germany_fdi": "cleared Jan 27 2026",
+        "doj_second_request": "complied Dec 23 2025",
+        "shareholder_vote": "completed early spring 2026",
+        "expected_close": "Q3 2026",
+        "ticking_fee": "$0.25/sh/qtr after Sep 30 2026",
+        "rival_bid": "Netflix priced out at ~4c"
+      },
+      "resolve_by": "2027-07-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXSPACEXCOUNT-26B-180",
+      "title": "How many launches will SpaceX have in 2026? (Above 180)",
+      "category": "single_stock",
+      "side": "no",
+      "yes_ask": 27,
+      "no_ask": 76,
+      "p_yes": 0.14,
+      "edge_cents": 10,
+      "count": 131,
+      "stake_cents": 9956,
+      "stake_dollars": 99.56,
+      "confidence": "med",
+      "close_time": "2027-01-01T15:00:00Z",
+      "rationale": "NO bet on the >180-launch tail. As of May 30 2026 SpaceX had ~64 Falcon-family launches (~12.8/mo, pace ~154/yr). President Gwynne Shotwell guided 'maybe 140, 145-ish' Falcon for 2026, and Starship V3 is paused under an FAA-required mishap investigation (May 27) so contributes little. Reaching 180 total needs ~116 more launches in 7 months (16.6/mo) - well above the company's own guidance. p(>180)~0.14, so p(NO)~0.86 vs no_ask 76 -> +10c edge. The market median (~155-160) looks fair; only the >180 tail is overpriced. Bought NO 131 @ 76.",
+      "key_signals": {
+        "ytd_launches_may30": 64,
+        "implied_pace_per_year": 154,
+        "company_falcon_guidance": "140-145",
+        "starship": "paused - FAA mishap investigation (May 27)",
+        "market_median_implied": "~155-160"
+      },
+      "resolve_by": "2027-01-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    },
+    {
+      "ticker": "KXIPO-26-OPENAI",
+      "title": "Who will IPO before 2027? (OpenAI)",
+      "category": "ipo",
+      "side": "no",
+      "yes_ask": 87,
+      "no_ask": 15,
+      "p_yes": 0.74,
+      "edge_cents": 11,
+      "count": 250,
+      "stake_cents": 3750,
+      "stake_dollars": 37.50,
+      "confidence": "low-med",
+      "close_time": "2027-01-01T04:59:00Z",
+      "rationale": "Small contrarian NO. OpenAI is confidentially filing for an IPO (~late May 2026) with a September target after the Musk lawsuit was cleared, working with Goldman Sachs and Morgan Stanley - real momentum, which is why YES sits at 87c. But to resolve YES the listing must COMPLETE by Dec 31 2026; IPOs routinely slip 1-3 months from target and Altman has publicly voiced ambivalence about going public. I put p(complete by 2027)~0.74, so p(NO)~0.26 vs no_ask 15 -> +11c edge. Deliberately sized DOWN to 250 contracts (vs the half-Kelly 431) because this is a low-confidence, fight-the-momentum bet on news only. Capped downside is 15c.",
+      "key_signals": {
+        "filing": "confidential, ~late May 2026",
+        "target": "September 2026",
+        "banks": "Goldman Sachs, Morgan Stanley",
+        "catalyst": "Musk lawsuit ruled in OpenAI's favor",
+        "risk": "Sept target -> completion could slip past Dec 31"
+      },
+      "resolve_by": "2027-01-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    }
+  ]
+}

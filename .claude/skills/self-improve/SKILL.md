@@ -11,7 +11,12 @@ You are the learning loop. Turn raw trade logs into a tight, evidence-backed pla
 - `.venv/bin/python journal.py read-decisions` → all logged decisions (each has `model_p`, `p_yes`, `category`, `signals`, `decision`, `order`).
 - `.venv/bin/python journal.py read-sells` → all exits (entry/exit/pnl/action/outcome).
 - Ignore rows with `"dry_run": true` — no real outcomes to learn from.
-- If there is little/no real history, say so and stop (don't invent lessons).
+- `.venv/bin/python paper_score.py --write` → scores the paper portfolios
+  (`logs/*-paper.json`) against settlement and fills their `actual_outcome` /
+  `actual_p_yes` placeholders. Paper trades ARE valid learning signal for the
+  news→bet judgment (the predictions were logged before outcomes existed) —
+  use the settled ones alongside real trades, but label paper-derived lessons.
+- If there is little/no real OR settled-paper history, say so and stop (don't invent lessons).
 
 ## Step 2 — Get ground-truth
 Collect the tickers from traded decisions, then:

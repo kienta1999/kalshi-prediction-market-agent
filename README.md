@@ -43,6 +43,7 @@ so they aren't price-backtestable — they go through the news/event layer (`new
 | `probability.py` | Lognormal model-implied `P(close >/< strike)` = `N(d2)` from realized vol + days-to-expiry. Uses the latest **intraday** spot (falls back to daily close; reports `spot_source`), or an explicit `--spot`. Supports `--strike`+`--dir` (threshold) and `--floor`+`--cap` (range). |
 | `news.py` | Returns links only (yfinance news + Google News RSS, deduped). Claude reads article bodies via WebFetch. |
 | `sizing.py` | Half-Kelly → integer contract count, capped at 10% of bankroll per trade. A calculator, not a decision-maker. |
+| `paper_score.py` | Scoreboard for the paper portfolios (`logs/*-paper.json`): joins every paper trade to Kalshi settlement, reports calibration (agent Brier vs market-implied Brier → `skill_vs_market`) and hypothetical P&L, overall / per-category / per-portfolio. `--write` fills the `actual_outcome`/`actual_p_yes` placeholders in the logs. Out-of-sample by construction. |
 | `journal.py` | Central JSONL logging: `log-decision` (every market evaluated, trade and skip), `log-sell` (every cron eval), plus `read_*` / `join_outcomes` helpers. Dry-run rows are excluded from learning. |
 | `sell_cron.py` | APScheduler daemon. TP: `(bid-entry) >= 0.75*(100-entry)`; SL: `(entry-bid) >= 0.40*entry`. Sells via an opposing limit-IOC order at the live bid. |
 | `backtest.py` | Replays the probability model + edge filter + sizing against real settled Kalshi markets (real intraday prices via candlesticks, real outcomes). Tests the deterministic core only — not Claude's news judgment, which can't be backtested without hindsight. |
@@ -61,11 +62,11 @@ post-Aug-2025 events; the gaps below are about making that systematic.
 
 Ranked by value:
 
-1. **Paper-log scoreboard** (`paper_score.py`) — read every `logs/*-paper.json`, join each pick
-   to Kalshi settlement, fill the `actual_outcome`/`actual_p_yes` placeholders, and print
-   calibration (predicted vs realized) + hypothetical P&L. Turns the accumulating paper bets
-   into a real, scored track record — the missing half of the news→bet loop. Reuses the
-   settlement-join `/self-improve` already has; could be called from it. **Best bang for buck.**
+1. ~~**Paper-log scoreboard** (`paper_score.py`)~~ — **done (2026-06-10)**: scores every
+   `logs/*-paper.json` against settlement (calibration + hypothetical P&L, agent-vs-market
+   Brier), fills the `actual_outcome`/`actual_p_yes` placeholders with `--write`, and is
+   wired into `/self-improve` Step 1. As of 2026-06-10 all 17 paper trades are still pending
+   (earliest resolutions Jun–Sep 2026) — rerun as they settle.
 2. **Batch news-backtest runner** — loop `news_backtest.py` over settled 2026 event markets and
    aggregate Brier score / calibration, segmented by category (IPO timing vs earnings-comps vs
    AI-race). Ground truth grows as 2026 events resolve (SpaceX Jul 1, Chipotle Aug 21, MCD Sep 4…).
@@ -103,6 +104,10 @@ Run every Python tool via the venv from the project root:
 .venv/bin/python kalshi.py financial-markets --category ipo  # one routing bucket
 .venv/bin/python kalshi.py settled --series KXBTCD
 .venv/bin/python kalshi.py --dry-run order --ticker <T> --action buy --side yes --count 10 --price 47
+
+# Score the paper portfolios against settlement (the news->bet scoreboard)
+.venv/bin/python paper_score.py            # report only
+.venv/bin/python paper_score.py --write    # also fill actual_outcome placeholders
 
 # Backtest the quant core against real settled markets (real intraday prices, no lookahead)
 .venv/bin/python backtest.py --all-series --use-daily --per-series 150   # full price universe (index+crypto)
