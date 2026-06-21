@@ -44,6 +44,22 @@ def _num(fp) -> float | None:
         return None
 
 
+def position_count(pos: dict) -> float:
+    """Signed open-contract count for a position row.
+
+    The live API reports it as `position_fp` (a float-as-string, e.g. "5.00",
+    "-8.00"); older/fixture rows use an integer `position`. Read whichever is
+    present so flat-vs-open and YES-vs-NO checks work against both schemas.
+    """
+    v = pos.get("position_fp")
+    if v is None:
+        v = pos.get("position")
+    try:
+        return float(v or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def normalize_market(m: dict) -> dict:
     """Flatten the modern `_dollars`/`_fp` market shape into clean integer-cent
     prices plus the fields the agent actually reasons over."""
@@ -202,7 +218,7 @@ class KalshiClient:
         fin = self.financial_series_set()
         out = []
         for p in positions:
-            if not p.get("position"):  # flat / closed
+            if position_count(p) == 0:  # flat / closed
                 continue
             series = config.series_of_ticker(p.get("ticker"))
             if config.is_financial_series(series, fin):

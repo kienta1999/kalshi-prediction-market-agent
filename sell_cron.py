@@ -17,7 +17,7 @@ import sys
 
 import config
 import journal
-from kalshi import KalshiClient, normalize_market
+from kalshi import KalshiClient, normalize_market, position_count
 
 
 def _cents_from_dollars(v) -> int | None:
@@ -38,7 +38,7 @@ def _exposure_cents(pos: dict) -> int | None:
 def evaluate_position(client: KalshiClient, pos: dict) -> dict:
     """Return a decision record (logged) describing TP/SL action for one position."""
     ticker = pos.get("ticker")
-    count = int(pos.get("position") or 0)
+    count = int(position_count(pos))
     if count == 0:
         return {"ticker": ticker, "action": "hold", "outcome": "hold",
                 "reason": "no open contracts"}
