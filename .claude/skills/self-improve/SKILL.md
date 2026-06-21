@@ -7,6 +7,8 @@ description: Learn from past Kalshi trades and rewrite the trading playbook. Rea
 
 You are the learning loop. Turn raw trade logs into a tight, evidence-backed playbook that makes future `/invest` runs better. **Run Python via `.venv/bin/python` from the project root.**
 
+**Finance only.** This agent trades financial markets; the account may also hold sports or other non-finance bets. Learn ONLY from finance history. By construction the logs are already finance-only — `/invest` is the only writer of `decisions.jsonl` and it only trades finance, and `sell_cron` only logs finance exits — so the steps below are finance-scoped. Still, if you ever spot a non-finance ticker in the logs (a series that is clearly not a financial market, e.g. an NBA/NFL/weather market), drop it before analyzing: it is not this agent's trade and would pollute the calibration.
+
 ## Step 1 — Gather history
 - `.venv/bin/python journal.py read-decisions` → all logged decisions (each has `model_p`, `p_yes`, `category`, `signals`, `decision`, `order`).
 - `.venv/bin/python journal.py read-sells` → all exits (entry/exit/pnl/action/outcome).

@@ -138,6 +138,51 @@ def classify_market(series_ticker: str | None, title: str | None = None,
     return "other"
 
 
+# --- Finance vs. non-finance positions ---------------------------------------
+# The account may hold bets the agent does NOT manage (e.g. sports placed by
+# hand). Slot-counting (/invest) and the TP/SL daemon (sell_cron) must act ONLY
+# on the agent's financial universe, so they need to tell the two apart from a
+# raw position row, which carries just a market `ticker`.
+
+
+def series_of_ticker(ticker: str | None) -> str | None:
+    """Derive the Kalshi series_ticker from a market ticker.
+
+    Kalshi market tickers are ``{SERIES}-{EVENT}-{STRIKE}``, so the series is the
+    prefix before the first dash (e.g. ``KXBTCD-26MAY3117-T73249.99`` -> ``KXBTCD``,
+    a sports ``KXNBAGAME-26JUN20-LAL`` -> ``KXNBAGAME``).
+    """
+    if not ticker:
+        return None
+    return ticker.split("-", 1)[0]
+
+
+def is_financial_series(series_ticker: str | None,
+                        financial_series: set[str] | None = None) -> bool:
+    """Whether a series belongs to the agent's financial universe.
+
+    Two layers, OR'd:
+      1. Index/crypto series we can map to a yfinance symbol are *definitionally*
+         financial — always True, even if the API list omits them.
+      2. Everything else (single stocks, IPOs, macro/CPI, rates) is financial
+         only if its series is in ``financial_series`` — the set Kalshi files
+         under ``category=Financials`` plus any series the agent has itself
+         traded, passed in by the caller.
+
+    A non-finance market (sports, weather, politics) matches neither layer, so
+    the worst case is undercounting the agent's own finance positions when the
+    set is unavailable — never managing someone else's bet.
+    """
+    if not series_ticker:
+        return False
+    st = series_ticker.upper()
+    if resolve_yf_symbol(st) is not None:   # known index/crypto: always finance
+        return True
+    if financial_series:
+        return st in {s.upper() for s in financial_series if s}
+    return False
+
+
 # --- Credential parsing ------------------------------------------------------
 _UUID_RE = re.compile(
     r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"

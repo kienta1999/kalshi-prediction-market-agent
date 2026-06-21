@@ -170,6 +170,45 @@ class KalshiClient:
     def get_positions(self) -> dict:
         return self._read("GET", "/portfolio/positions", "positions.json")
 
+    def financial_series_set(self) -> set[str]:
+        """Series tickers in the agent's financial universe.
+
+        Union of (a) what Kalshi files under ``category=Financials`` and (b) any
+        series the agent has itself traded (read from the decisions log). (b)
+        catches finance series that Kalshi may file under a different category
+        (e.g. macro/CPI under "Economics") but that /invest does trade. Anything
+        not in this set — sports, weather, politics — is treated as non-finance.
+        """
+        out = {s.get("ticker") for s in self.get_financial_series().get("series", [])
+               if s.get("ticker")}
+        try:
+            import journal
+            out |= {config.series_of_ticker(d.get("ticker"))
+                    for d in journal.read_decisions(include_dry_run=True)
+                    if d.get("ticker")}
+        except Exception:  # log unreadable -> just rely on the API set
+            pass
+        return {s for s in out if s}
+
+    def financial_positions(self, positions: list[dict] | None = None) -> list[dict]:
+        """Open positions restricted to the financial universe.
+
+        Drops flat (zero-contract) rows and any position whose series is not
+        financial (e.g. sports bets sharing the account). This is the boundary
+        that keeps slot-counting and the TP/SL daemon finance-only.
+        """
+        if positions is None:
+            positions = self.get_positions().get("market_positions", [])
+        fin = self.financial_series_set()
+        out = []
+        for p in positions:
+            if not p.get("position"):  # flat / closed
+                continue
+            series = config.series_of_ticker(p.get("ticker"))
+            if config.is_financial_series(series, fin):
+                out.append(p)
+        return out
+
     def get_financial_series(self) -> dict:
         return self._read("GET", "/series", "series.json",
                           params={"category": "Financials"})
@@ -312,7 +351,10 @@ def main(argv: list[str] | None = None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("balance")
-    sub.add_parser("positions")
+    pos = sub.add_parser("positions")
+    pos.add_argument("--financial-only", action="store_true",
+                     help="only open positions in the financial universe "
+                          "(excludes sports and other non-finance bets); adds a `count`")
     sub.add_parser("series")
     fm = sub.add_parser("financial-markets")
     fm.add_argument("--series", default=None,
@@ -339,7 +381,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "balance":
         out = client.get_balance()
     elif args.cmd == "positions":
-        out = client.get_positions()
+        if args.financial_only:
+            fin = client.financial_positions()
+            out = {"market_positions": fin, "count": len(fin)}
+        else:
+            out = client.get_positions()
     elif args.cmd == "series":
         out = [{"ticker": s.get("ticker"), "title": s.get("title"),
                 "category": s.get("category")}

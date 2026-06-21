@@ -81,7 +81,12 @@ def evaluate_position(client: KalshiClient, pos: dict) -> dict:
 
 
 def run_once(client: KalshiClient) -> list[dict]:
-    positions = client.get_positions().get("market_positions", [])
+    # Only manage the agent's financial positions. Any non-finance bet sharing
+    # the account (e.g. sports placed by hand) is skipped so this never auto-sells
+    # something the agent did not buy.
+    raw = client.get_positions().get("market_positions", [])
+    positions = client.financial_positions(raw)
+    skipped = len(raw) - len(positions)
     results = []
     for pos in positions:
         rec = evaluate_position(client, pos)
@@ -91,8 +96,10 @@ def run_once(client: KalshiClient) -> list[dict]:
         print(f"{flag}{rec['ticker']}: {rec['action']} "
               f"(entry {rec.get('entry_cents')}c, bid {rec.get('exit_cents')}c, "
               f"pnl {rec.get('pnl_cents')}c)")
+    if skipped:
+        print(f"(skipped {skipped} non-finance/flat position(s))")
     if not results:
-        print("no open positions")
+        print("no open financial positions")
     return results
 
 

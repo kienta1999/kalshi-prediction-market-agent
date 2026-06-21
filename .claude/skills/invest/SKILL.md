@@ -16,9 +16,9 @@ Read `logs/lessons.md`. Apply its heuristics to every probability estimate and t
 
 ## Step 2 — Budget
 - `.venv/bin/python kalshi.py balance` → bankroll (cents).
-- `.venv/bin/python kalshi.py positions` → count open `market_positions`.
+- `.venv/bin/python kalshi.py positions --financial-only` → `count` = open **financial** positions. **Always use `--financial-only`.** The account may also hold sports or other non-finance bets; those are this agent's responsibility neither to count nor to touch, and `--financial-only` excludes them so they never eat into your slot budget. (Plain `kalshi.py positions` shows everything, for reference only.)
 - Compute slot cap from bankroll: `slot_cap = min(40, max(10, bankroll_dollars // 250))`. The $250 divisor is a rough average position size — actual bets are sized by half-Kelly and will vary widely (a high-edge trade gets much more than a marginal one). The formula just sets a diversification ceiling. Examples: $2.5k → 10 slots, $5k → 20, $10k → 40, $20k+ → still 40 (half-Kelly naturally sizes up each bet as bankroll grows).
-- `slots = slot_cap - open_positions`. If `slots <= 0`, stop and report "at position cap".
+- `slots = slot_cap - financial_open_positions`. If `slots <= 0`, stop and report "at position cap". (Only finance positions count: e.g. with a 10-slot cap, 2 finance + 7 sports open = 8 slots free, not 1.)
 - **Slots are a ceiling, not a target.** If only 6 markets have genuine edge today, place 6 trades. Never scrape weak opportunities to fill unused slots — scan again tomorrow.
 
 ## Step 3 — Candidate markets
