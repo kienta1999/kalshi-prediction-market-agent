@@ -336,26 +336,52 @@ class KalshiClient:
         return out
 
     # --- order placement -----------------------------------------------------
+    ORDER_ENDPOINT = "/portfolio/events/orders"  # V2 (legacy /portfolio/orders -> 410)
+
     def create_order(self, ticker: str, action: str, side: str, count: int,
                      price_cents: int, time_in_force: str = "immediate_or_cancel",
                      client_order_id: str | None = None) -> dict:
+        """Place a limit order via Kalshi's V2 order endpoint.
+
+        The V2 book is single-sided on the YES leg: `side` is "bid" (buy YES) or
+        "ask" (sell YES), with a single decimal-dollar `price` string and a
+        decimal-string `count`. We keep the agent's familiar (action,
+        side=yes/no, price_cents) interface and translate to the YES leg:
+
+            buy  yes  -> bid at  price_cents/100
+            sell yes  -> ask at  price_cents/100
+            buy  no   -> ask at (100 - price_cents)/100   # sell YES == buy NO
+            sell no   -> bid at (100 - price_cents)/100
+
+        `price_cents` is the price of the *chosen* side (e.g. no_ask for buy-no),
+        so a buy-no at 23c becomes a sell-YES (ask) at 0.77.
+        """
         coid = client_order_id or str(uuid.uuid4())
+        price_cents = int(price_cents)
+        if side == "yes":
+            book_side, yes_price = ("bid" if action == "buy" else "ask"), price_cents
+        elif side == "no":
+            book_side, yes_price = ("ask" if action == "buy" else "bid"), 100 - price_cents
+        else:
+            raise KalshiError(f"invalid side {side!r} (expected yes|no)")
+        if not (1 <= yes_price <= 99):
+            raise KalshiError(f"price out of range: yes-leg {yes_price}c")
+
         body = {
             "ticker": ticker,
-            "action": action,            # buy | sell
-            "side": side,                # yes | no
-            "count": int(count),
-            "type": "limit",
+            "side": book_side,
+            "count": f"{int(count)}.00",
+            "price": f"{yes_price / 100:.4f}",
             "time_in_force": time_in_force,
+            "self_trade_prevention_type": "taker_at_cross",
             "client_order_id": coid,
         }
-        body["yes_price" if side == "yes" else "no_price"] = int(price_cents)
 
         if self.dry_run:
-            print(f"[dry-run] WOULD POST /portfolio/orders: {json.dumps(body)}",
+            print(f"[dry-run] WOULD POST {self.ORDER_ENDPOINT}: {json.dumps(body)}",
                   file=sys.stderr)
             return {"dry_run": True, "order": {**body, "status": "simulated"}}
-        return self._request("POST", "/portfolio/orders", body=body)
+        return self._request("POST", self.ORDER_ENDPOINT, body=body)
 
 
 # --- CLI ---------------------------------------------------------------------
