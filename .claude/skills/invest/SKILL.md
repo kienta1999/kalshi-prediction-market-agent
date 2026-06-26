@@ -22,9 +22,11 @@ Read `logs/lessons.md`. Apply its heuristics to every probability estimate and t
 - **Slots are a ceiling, not a target.** If only 6 markets have genuine edge today, place 6 trades. Never scrape weak opportunities to fill unused slots — scan again tomorrow.
 
 ## Step 3 — Candidate markets
-- **Always run `--all`** to scan the full universe (IPO, earnings, macro, single-stock, rates, crypto, index). The default omits the most interesting event markets. Use `--series A,B` or `--category <name>` to narrow only when a specific theme was requested.
+- **Always run `--all`** to scan the full universe. `--all` spans every Kalshi category in `config.SCAN_CATEGORIES` — **financials, crypto, commodities, economics, science/technology** — covering IPO, earnings, macro, single-stock, rates, FX, crypto (incl. daily BTC/ETH), index, commodities (oil/gas/metals), and tech events (AI model races, GPU prices, product launches). This is heavy (~3 min, many API calls); use `--series A,B` or `--category <name>` to narrow only when a specific theme was requested.
+- **Finance only — skip curiosities.** Kalshi cross-files non-finance markets into these categories (aliens, math prizes, disease/pandemic counts, moon landings, foreign politics, sports/entertainment). `config.is_finance_relevant` already drops the obvious ones from the scan, but if any survive, **do not trade them** — the user only wants finance-related bets (price moves, rates, earnings, M&A, IPOs, company/AI-industry outcomes with a financial read). If a market's resolution has no financial meaning, skip it regardless of edge.
 - Take the top candidates by volume (liquidity = realistic fills). Analyzing ~15-30 is plenty; you only have `slots` to fill.
 - **Diversify across underlyings and categories.** A portfolio of 20 all-in on BTC is not 20 bets — it is one bet repeated. Aim for at least 3 distinct categories in the final trade list.
+- **Commodities** (oil/gas/metals) currently have **no yfinance mapping**, so they route as `rates_fx`/`single_stock` → news-only; treat them as lower-confidence event markets unless you confirm a symbol.
 
 ## Step 4 — Per-market analysis (classify, then route)
 Each market already carries a `category` (from `config.classify_market`). Route tools by it. **Only the first three categories have a quantitative anchor (a `yf_symbol` + a price strike); the rest are news-reasoning only and cannot be backtested — treat their estimates as lower-confidence.**

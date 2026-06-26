@@ -225,9 +225,30 @@ class KalshiClient:
                 out.append(p)
         return out
 
-    def get_financial_series(self) -> dict:
-        return self._read("GET", "/series", "series.json",
-                          params={"category": "Financials"})
+    def get_series_by_category(self, category: str) -> list[dict]:
+        """Series filed under one Kalshi /series `category` (e.g. "Crypto")."""
+        r = self._read("GET", "/series", "series.json",
+                       params={"category": category})
+        return (r or {}).get("series") or []
+
+    def get_financial_series(self, categories: tuple[str, ...] | None = None) -> dict:
+        """Series across every category in the agent's financial universe.
+
+        Unions and de-dupes the series listed under each of
+        ``config.SCAN_CATEGORIES`` (crypto, commodities, economics, financials,
+        science). Kept returning the ``{"series": [...]}`` shape so existing
+        callers are unchanged. An unknown/empty category just contributes nothing.
+        """
+        cats = categories or config.SCAN_CATEGORIES
+        seen: set[str] = set()
+        out: list[dict] = []
+        for cat in cats:
+            for s in self.get_series_by_category(cat):
+                t = s.get("ticker")
+                if t and t not in seen:
+                    seen.add(t)
+                    out.append(s)
+        return {"series": out}
 
     def list_markets(self, series_ticker: str | None = None, status: str = "open",
                      tickers: str | None = None, limit: int = 200,
@@ -324,6 +345,8 @@ class KalshiClient:
                 if nm["ticker"] in seen:
                     continue
                 if tradeable_only and not is_tradeable(nm):
+                    continue
+                if not config.is_finance_relevant(nm["title"]):
                     continue
                 nm["category"] = config.classify_market(
                     nm["series_ticker"], nm["title"], nm["strike_type"])
@@ -434,8 +457,15 @@ def main(argv: list[str] | None = None) -> int:
                for s in client.get_financial_series().get("series", [])]
     elif args.cmd == "financial-markets":
         if args.all:
-            series = [s.get("ticker")
-                      for s in client.get_financial_series().get("series", [])]
+            # Discover series across every category in the agent's universe
+            # (config.SCAN_CATEGORIES: financials, crypto, commodities,
+            # economics, science), then union with the hardcoded mappable set so
+            # the daily index/crypto series are always present even if an API
+            # category listing omits them.
+            discovered = {s.get("ticker")
+                          for s in client.get_financial_series().get("series", [])
+                          if s.get("ticker")}
+            series = sorted(discovered | set(config.SERIES_TO_YF.keys()))
         elif args.series:
             series = [s.strip() for s in args.series.split(",") if s.strip()]
         else:

@@ -67,6 +67,20 @@ SERIES_TO_YF = {
 }
 
 
+# Kalshi /series `category` names that make up the agent's financial universe.
+# These are the exact API category strings (not the kalshi.com URL slugs) for the
+# categories the user follows: crypto, commodities, economics, financials,
+# science. The daily BTC/ETH series live under "Crypto", not "Financials", so all
+# of these must be queried and unioned to scan the full universe.
+SCAN_CATEGORIES = (
+    "Financials",
+    "Crypto",
+    "Commodities",
+    "Economics",
+    "Science and Technology",
+)
+
+
 # Prefix families for the index/crypto series (Kalshi appends suffixes like
 # U/D/W/Y/100Y to the same underlying), so symbol resolution is prefix-aware.
 _YF_PREFIXES = (
@@ -106,6 +120,38 @@ _MACRO_KW = ("cpi", "inflation", "ppi", "payroll", "jobs", "unemployment", "gdp"
 _RATES_FX_KW = ("usd", "eur", "gbp", "jpy", "aud", "cad", "yuan", "yen", "euro",
                 "treasury", "yield", "10-year", "2-year", "fx", "dollar")
 _IPO_KW = ("ipo", "go public", "public offering", "debut", "direct listing")
+
+# --- Non-finance exclusion ---------------------------------------------------
+# Kalshi files some pure-curiosity markets (aliens, math prizes, disease
+# outbreaks, moon landings, sports/entertainment, foreign politics) under the
+# same categories we scan — e.g. KXALIENS and KXRIEMANN both sit in "Science and
+# Technology" next to KXGPT/KXLLM1, and KXPAHLAVIHEAD (Iran politics) is even
+# filed under "Financials". Category-level filtering can't separate them, so we
+# drop markets whose title matches a non-finance topic. Phrases are kept specific
+# to avoid false positives (e.g. "warner" must not trip a "war" rule, "prime day"
+# must not trip "prime"). /invest also skips any survivors by judgment.
+NON_FINANCE_KW = (
+    "alien", "ufo", "extraterrestrial",
+    "riemann", "millennium prize", "p versus np",
+    "ebola", "pandemic", "outbreak", "measles", "h5n1", "bird flu",
+    "smallpox", "polio", "mpox", "disease",
+    "on the moon", "moon landing", "land a person", "asteroid", "meteor",
+    "earthquake", "hurricane", "tornado", "volcano", "tsunami", "wildfire",
+    "nobel prize", "academy award", "the oscars", "grammy award", "emmy award",
+    "super bowl", "world cup", "olympic", "ballon d'or", "heisman",
+    "head of state", "head of government", "prime minister of", "next pope",
+    "papal conclave", "royal", "monarch",
+)
+
+
+def is_finance_relevant(title: str | None) -> bool:
+    """False if a market title matches a non-finance topic (see NON_FINANCE_KW).
+
+    Used to keep the scan finance-only even though Kalshi cross-files curiosity
+    markets into the finance/crypto/economics/science/commodities categories.
+    """
+    t = (title or "").lower()
+    return not any(kw in t for kw in NON_FINANCE_KW)
 
 
 def classify_market(series_ticker: str | None, title: str | None = None,
