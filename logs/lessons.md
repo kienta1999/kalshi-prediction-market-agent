@@ -114,6 +114,61 @@ buying if no_ask < 7–28¢ (rare). Effectively skip all NO bets there.
 - Keep the ≤5¢-edge skip even at high conviction (2026-06-10: Musk-$1T YES at
   90 with p≈0.94 was correctly skipped at +4¢ — right thesis, no room).
 
+## Single-stock delivery/production ladders — DON'T fade the ladder (2026-07-01)
+
+> Source: live positions, mark-to-market 2026-07-01; **settlement-confirmed
+> 2026-07-02**: Tesla printed >460k deliveries, ALL THREE strikes resolved YES,
+> every NO contract went to zero — realized loss $23.13 + $0.65 fees = **−$23.78**
+> (5×440k@47, 21×450k@58, 13×460k@61). The model priced P(>450k)=15% and
+> P(>460k)=7%; both happened. Hard calibration fact, not just a process error.
+
+The −$8.31 finance drawdown on 2026-07-01 was ~100% the **Tesla Q2-delivery NO
+ladder**. We shorted three correlated strikes on one event on 06-29:
+
+| strike | side | cnt | entry | now (bid) | MTM |
+|---|---|---|---|---|---|
+| >440k | NO | 3 | 47 | 31 | −$0.48 |
+| >450k | NO | 21 | 58 | 32 | **−$5.46** |
+| >460k | NO | 13 | 61 | 39 | −$2.86 |
+
+Thesis was "consensus 406k, Goldman 420k, ladder median ~445k is too high →
+NO." Into the report the market repriced the **opposite** way: >450k YES ran
+58→64+, i.e. the market now implies deliveries ~465k+. We faded a deep, liquid
+ladder (>79k contracts of volume) armed only with **stale sell-side consensus**
+and no dated hard fact — the exact failure the event-market rules below warn of,
+on a single stock instead of an IPO.
+
+Two compounding errors:
+1. **No informational edge vs. a liquid single-stock ladder.** A delivery-count
+   market with tens of thousands of contracts has already priced the whisper /
+   tracking data. A month-old consensus number is not edge. If the ladder median
+   sits well above published consensus, assume the market knows something (fresh
+   tracking data), don't assume it's wrong.
+2. **Correlated laddering concentrated the risk.** 440k/450k/460k are the same
+   bet — if deliveries print high, all three lose together. ~$21.5 (≈⅓ of the
+   book) rode on one Jul-2 catalyst. That turned a normal single-position dip
+   into the whole day's loss.
+
+**Rules for /invest:**
+- **Do not NO-fade a single-stock delivery/production/comps ladder** on stale
+  consensus alone. Require a *dated, published* number (the actual report, an
+  official pre-announcement) — not a sell-side estimate — before betting against
+  the ladder median. Prefer to trade these *after* the number is out, not before.
+- **One catalyst = one position's worth of risk.** Betting multiple strikes of
+  the same event ladder is not diversification; cap total stake on a single
+  event/catalyst as if it were one position. The Hood NO (+$1.17) and OpenAI-IPO
+  NO (+$0.40) held fine — the damage was 100% the tripled Tesla bet.
+- ~~Reassess after the Jul-2 print~~ → done, see source note above: total loss,
+  market was right, model P(7–15%) events both happened.
+- **These rules are now enforced in CODE, not just here** (2026-07-04): sizing.py
+  vetoes >20¢ edge claims in non-backtested categories without `--hard-fact`
+  (`config.MAX_PLAUSIBLE_EDGE_CENTS`), and kalshi.py refuses buys pushing one
+  event_ticker past 10% of portfolio (`config.MAX_EVENT_FRACTION`). Prose rules
+  written after each loss kept getting rationalized around prospectively (the
+  Jun-18 entry called the *upcoming report date* a "hard catalyst" to satisfy
+  the Jun-10 "hard dated fact" rule; the Jun-21 "do NOT stack" note was ignored
+  on Jun-29). Deterministic gates don't negotiate.
+
 ## Event-market interim observations (mark-to-market, NOT settlement-verified)
 
 > Source: `paper_score.py --mark` 2026-06-10 on the 17 pre-Jun-10 paper trades.

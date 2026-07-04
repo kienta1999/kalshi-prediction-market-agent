@@ -361,6 +361,49 @@ class KalshiClient:
     # --- order placement -----------------------------------------------------
     ORDER_ENDPOINT = "/portfolio/events/orders"  # V2 (legacy /portfolio/orders -> 410)
 
+    def _enforce_event_cap(self, ticker: str, count: int, price_cents: int) -> None:
+        """Refuse a buy that pushes one event's total cost past MAX_EVENT_FRACTION
+        of the portfolio.
+
+        All strikes of a ladder share an event_ticker and settle on the same
+        catalyst, so their exposure is summed and capped as ONE position. This is
+        a hard gate with no override flag: it exists precisely because the prose
+        version of this rule was rationalized around (Tesla Q2 ladder, 2026-07-01).
+        Sells are never gated (reducing risk is always allowed). Fails closed:
+        if balance/positions can't be read, the order is refused.
+        """
+        event = config.event_ticker_of(ticker)
+        new_cost = int(count) * int(price_cents)
+        try:
+            bal = self.get_balance()
+            positions = self.get_positions().get("market_positions", [])
+        except Exception as e:
+            raise KalshiError(
+                f"event-cap check could not read balance/positions ({e}); "
+                "refusing buy order (fail-closed)") from e
+        existing = 0
+        for pos in positions:
+            if config.event_ticker_of(pos.get("ticker")) != event:
+                continue
+            existing += _cents(pos.get("market_exposure_dollars")) or 0
+        bankroll = bal.get("portfolio_value")
+        if not bankroll:
+            bankroll = (bal.get("balance") or 0) + sum(
+                _cents(p.get("market_exposure_dollars")) or 0 for p in positions)
+        cap = int(config.MAX_EVENT_FRACTION * bankroll)
+        if existing + new_cost > cap:
+            room = max(0, cap - existing)
+            max_count = room // int(price_cents) if price_cents else 0
+            raise KalshiError(
+                f"EVENT EXPOSURE CAP: {event} already has ${existing / 100:.2f} at "
+                f"risk; this order adds ${new_cost / 100:.2f}, cap is "
+                f"${cap / 100:.2f} ({config.MAX_EVENT_FRACTION:.0%} of "
+                f"${bankroll / 100:.2f} portfolio). One catalyst = one position's "
+                f"worth of risk — a strike ladder is not diversification. "
+                f"Max additional count at {price_cents}c: {max_count}. "
+                f"Do not work around this by resizing to the limit AND adding "
+                f"other markets on the same catalyst.")
+
     def create_order(self, ticker: str, action: str, side: str, count: int,
                      price_cents: int, time_in_force: str = "immediate_or_cancel",
                      client_order_id: str | None = None) -> dict:
@@ -381,6 +424,8 @@ class KalshiClient:
         """
         coid = client_order_id or str(uuid.uuid4())
         price_cents = int(price_cents)
+        if action == "buy":
+            self._enforce_event_cap(ticker, count, price_cents)
         if side == "yes":
             book_side, yes_price = ("bid" if action == "buy" else "ask"), price_cents
         elif side == "no":

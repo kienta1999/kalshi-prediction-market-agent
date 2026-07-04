@@ -43,6 +43,17 @@ CAP = 20                 # max concurrent open positions
 KELLY_FRACTION = 0.5     # half-Kelly
 MAX_TRADE_FRACTION = 0.10  # never stake more than 10% of bankroll on one market
 FEE_BUFFER_CENTS = 3     # require at least this much edge (cents) to clear fees
+
+# Hard risk gates (enforced in code, not prose — see logs/lessons.md 2026-07-01:
+# the Tesla Q2-delivery NO ladder stacked 39 contracts across three strikes of
+# one event and lost $23.78 when the report printed >460k; the prose rules that
+# should have stopped it were rationalized around).
+MAX_EVENT_FRACTION = 0.10   # max total cost across ALL markets of one event_ticker
+                            # (a strike ladder on one catalyst is ONE position)
+BACKTESTED_CATEGORIES = {"crypto", "index"}  # only these have calibration evidence
+MAX_PLAUSIBLE_EDGE_CENTS = 20  # in non-backtested categories, a claimed edge above
+                               # this vs a liquid market means the market knows
+                               # something we don't — skip unless a hard fact backs it
 TP_FRACTION = 0.75       # take profit at 75% of max possible gain
 SL_FRACTION = 0.40       # stop loss when down 40% of cost basis
 CRON_INTERVAL_MINUTES = 120  # TP/SL check cadence
@@ -201,6 +212,21 @@ def series_of_ticker(ticker: str | None) -> str | None:
     if not ticker:
         return None
     return ticker.split("-", 1)[0]
+
+
+def event_ticker_of(ticker: str | None) -> str | None:
+    """Derive the event_ticker from a market ticker.
+
+    ``{SERIES}-{EVENT}-{STRIKE}`` -> ``{SERIES}-{EVENT}`` (e.g.
+    ``KXTSLA-26JULDELIV-450000.0`` -> ``KXTSLA-26JULDELIV``). All strikes of one
+    ladder share an event_ticker — they settle on the same catalyst and must be
+    risk-capped as a single position. A ticker with fewer than three segments is
+    returned as-is.
+    """
+    if not ticker:
+        return None
+    parts = ticker.split("-")
+    return "-".join(parts[:2]) if len(parts) >= 3 else ticker
 
 
 def is_financial_series(series_ticker: str | None,

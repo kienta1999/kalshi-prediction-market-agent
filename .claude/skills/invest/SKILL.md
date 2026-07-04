@@ -68,7 +68,12 @@ For each market produce: `p_yes` (your probability YES resolves true, 0-1), `con
 Skip anything with `edge_cents <= 5`. Rank the rest by edge; for the top `slots`:
 
 **Correlation cap: at most 3 trades on the same underlying.** Group by `series_ticker` (for price markets) or by shared underlying concept (e.g., all "Anthropic IPO" markets, all BTC strikes). If the top-ranked list has more than 3 from the same group, drop the extras and fill those slots from the next-best edge in a different group. This prevents one thesis (BTC goes down, Claude loses the AI race) from consuming the whole portfolio.
-- `.venv/bin/python sizing.py --p <p_yes> --ask <yes_ask> --balance <remaining_cents>` → `count`. Skip if `count == 0`.
+
+**Two hard gates are enforced in code** (added after the Tesla Q2-delivery ladder lost $23.78 on 2026-07-02 — three NO strikes on one event, entered on stale consensus against a liquid market):
+1. **Implausible-edge gate (sizing.py):** outside the backtested categories (`crypto`, `index`), an edge claim > 20¢ returns `count: 0` unless you pass `--hard-fact`. Pass `--hard-fact` ONLY when an **already-published, dated number** (the actual report, an official pre-announcement, a filed document) contradicts the price — a sell-side estimate is not a hard fact, and an *upcoming* report date is not a hard fact (that misreading is exactly how the Tesla trade got in). When you use it, put the source and its publication date in the decision log's `signals.hard_fact`.
+2. **Event-exposure cap (kalshi.py):** a buy that would push the total cost across ALL markets sharing one `event_ticker` above 10% of the portfolio raises `EVENT EXPOSURE CAP`. Every strike of a ladder shares an event_ticker — a ladder is one position, not diversification. If an order is refused: accept it. You may resize down to the stated max count, but do NOT then route the same thesis through sibling events (e.g. the production event next to the deliveries event) — same catalyst, same cap in spirit even where the code can't see it.
+
+- `.venv/bin/python sizing.py --p <p_yes> --ask <yes_ask> --balance <remaining_cents> --category <category>` (add `--hard-fact` only per gate 1 above) → `count`. Skip if `count == 0` — never hand-compute a count to bypass a veto.
 - Decrement remaining balance by `count * yes_ask` so you don't over-deploy across the run.
 - Place: `.venv/bin/python kalshi.py order --ticker <t> --action buy --side yes --count <count> --price <yes_ask>` (add `--dry-run` if dry).
 - Update that market's logged decision row's `order` with `{count, entry_cents, client_order_id}` (re-log is fine).
