@@ -7,8 +7,7 @@
   "slots_used": 10,
   "total_deployed_cents": 116312,
   "total_deployed_dollars": 1163.12,
-  "note": "Hypothetical paper portfolio — not in the US, dry-run only. Revisit with /self-improve once markets resolve.",
-
+  "note": "Hypothetical paper portfolio \u2014 not in the US, dry-run only. Revisit with /self-improve once markets resolve.",
   "trades": [
     {
       "ticker": "KXMCD-26AUGCOMP-2.5",
@@ -23,7 +22,7 @@
       "stake_dollars": 199.98,
       "confidence": "med-high",
       "close_time": "2026-09-04T11:00:00Z",
-      "rationale": "Q1 2026 global comps 3.8% (US 3.9%, IOM 3.9%). Q2 threshold 2.5% — needs 1.3-point deceleration to miss. Revenue growth 9.4%, FCF strong. Warning: stock -4.9% in 20d, below both MAs. Adjusted from 63% to 58% on stock weakness signal.",
+      "rationale": "Q1 2026 global comps 3.8% (US 3.9%, IOM 3.9%). Q2 threshold 2.5% \u2014 needs 1.3-point deceleration to miss. Revenue growth 9.4%, FCF strong. Warning: stock -4.9% in 20d, below both MAs. Adjusted from 63% to 58% on stock weakness signal.",
       "key_signals": {
         "q1_2026_global_comps_pct": 3.8,
         "q1_2026_us_comps_pct": 3.9,
@@ -40,7 +39,7 @@
     },
     {
       "ticker": "KXLLM1-26DEC31-A",
-      "title": "Best AI in Dec 2026? — Claude: Anthropic",
+      "title": "Best AI in Dec 2026? \u2014 Claude: Anthropic",
       "category": "other",
       "side": "no",
       "no_ask": 37,
@@ -49,10 +48,10 @@
       "edge_cents": 18,
       "count": 540,
       "stake_cents": 19980,
-      "stake_dollars": 199.80,
+      "stake_dollars": 199.8,
       "confidence": "medium",
       "close_time": "2026-12-31T15:00:00Z",
-      "rationale": "Market prices Claude at 64% to win best AI by Dec 2026. AI landscape is fragmented — Claude leads coding, Gemini leads reasoning, GPT leads agentic tasks. 7 months is an eternity in AI. Estimate 45% — market overconfident in single-model dominance.",
+      "rationale": "Market prices Claude at 64% to win best AI by Dec 2026. AI landscape is fragmented \u2014 Claude leads coding, Gemini leads reasoning, GPT leads agentic tasks. 7 months is an eternity in AI. Estimate 45% \u2014 market overconfident in single-model dominance.",
       "key_signals": {
         "claude_swebench_pro": 0.643,
         "gemini_gpqa_diamond": 0.943,
@@ -65,7 +64,7 @@
     },
     {
       "ticker": "KXLLM1-26DEC31-GOOG",
-      "title": "Best AI in Dec 2026? — Gemini: Google",
+      "title": "Best AI in Dec 2026? \u2014 Gemini: Google",
       "category": "other",
       "side": "yes",
       "yes_ask": 16,
@@ -88,7 +87,7 @@
     },
     {
       "ticker": "KXLLM1-26DEC31-OAI",
-      "title": "Best AI in Dec 2026? — ChatGPT: OpenAI",
+      "title": "Best AI in Dec 2026? \u2014 ChatGPT: OpenAI",
       "category": "other",
       "side": "yes",
       "yes_ask": 14,
@@ -99,7 +98,7 @@
       "stake_dollars": 72.94,
       "confidence": "low-medium",
       "close_time": "2026-12-31T15:00:00Z",
-      "rationale": "GPT-5.4 is the best all-rounder with the largest ecosystem. If best AI uses a composite or user preference metric, OpenAI has a strong argument. Market at 14% seems too low. Third leg of Claude-NO / Gemini-YES / GPT-YES position — hits 3-trade correlation cap on best-AI concept.",
+      "rationale": "GPT-5.4 is the best all-rounder with the largest ecosystem. If best AI uses a composite or user preference metric, OpenAI has a strong argument. Market at 14% seems too low. Third leg of Claude-NO / Gemini-YES / GPT-YES position \u2014 hits 3-trade correlation cap on best-AI concept.",
       "key_signals": {
         "gpt55_terminal_bench": 0.827,
         "verdict": "best all-rounder with largest ecosystem"
@@ -110,7 +109,7 @@
     },
     {
       "ticker": "KXIPOSPACEX-26JUL01",
-      "title": "When will SpaceX IPO? — Before Jul 1, 2026",
+      "title": "When will SpaceX IPO? \u2014 Before Jul 1, 2026",
       "category": "ipo",
       "side": "no",
       "no_ask": 3,
@@ -122,7 +121,7 @@
       "stake_dollars": 68.64,
       "confidence": "low",
       "close_time": "2026-07-01T03:59:00Z",
-      "rationale": "SpaceX S-1 confirmed filed May 20. Roadshow June 8, pricing June 18-30, first trade late June. Market at 98% YES (IPO before Jul 1). Execution risk: pricing of June 28-30 could push first trading day to July 1+. Largest IPO in history adds complexity. Musk comments diverged from filing per CNBC. Estimate 88% YES — buying NO at 3c as a low-cost timing-risk hedge.",
+      "rationale": "SpaceX S-1 confirmed filed May 20. Roadshow June 8, pricing June 18-30, first trade late June. Market at 98% YES (IPO before Jul 1). Execution risk: pricing of June 28-30 could push first trading day to July 1+. Largest IPO in history adds complexity. Musk comments diverged from filing per CNBC. Estimate 88% YES \u2014 buying NO at 3c as a low-cost timing-risk hedge.",
       "key_signals": {
         "s1_filed": "2026-05-20",
         "roadshow_start": "2026-06-08",
@@ -132,136 +131,136 @@
         "top_headlines": [
           "SpaceX S-1 confirmed filed May 20 2026 on SEC EDGAR",
           "Roadshow June 8 pricing June 18-30 first trade late June",
-          "SpaceX skeptics: Musk comments diverge from IPO filing — CNBC"
+          "SpaceX skeptics: Musk comments diverge from IPO filing \u2014 CNBC"
         ]
       },
       "resolve_by": "2026-07-01",
+      "actual_outcome": "yes",
+      "actual_p_yes": 1.0
+    },
+    {
+      "ticker": "KXIPHONERELEASE-IPHONE18-27JAN01",
+      "title": "Will Apple release iPhone 18 before Jan 1, 2027?",
+      "category": "other",
+      "side": "yes",
+      "yes_ask": 16,
+      "p_yes": 0.65,
+      "edge_cents": 49,
+      "count": 854,
+      "stake_cents": 13664,
+      "stake_dollars": 136.64,
+      "confidence": "low",
+      "close_time": "2027-01-01T04:59:00Z",
+      "rationale": "iPhone 18 Pro confirmed September 2026 (event Sep 8-14, ship Sep 18). Market at 16% seems wrong IF any iPhone 18 family model counts. KEY RISK: base iPhone 18 delayed to spring 2027 \u2014 resolution criteria ambiguity is the main risk here, not the event itself. Sized at 10% cap.",
+      "key_signals": {
+        "pro_max_foldable_launch": "September 2026",
+        "base_model_launch": "spring 2027",
+        "resolution_risk": "Does 'iPhone 18' require the base model or does Pro count?"
+      },
+      "resolve_by": "2027-01-01",
       "actual_outcome": null,
       "actual_p_yes": null
     },
     {
-      "ticker": "KXIPHONERELEASE-IPHONE18-27JAN01",
-    "title": "Will Apple release iPhone 18 before Jan 1, 2027?",
-    "category": "other",
-    "side": "yes",
-    "yes_ask": 16,
-    "p_yes": 0.65,
-    "edge_cents": 49,
-    "count": 854,
-    "stake_cents": 13664,
-    "stake_dollars": 136.64,
-    "confidence": "low",
-    "close_time": "2027-01-01T04:59:00Z",
-    "rationale": "iPhone 18 Pro confirmed September 2026 (event Sep 8-14, ship Sep 18). Market at 16% seems wrong IF any iPhone 18 family model counts. KEY RISK: base iPhone 18 delayed to spring 2027 — resolution criteria ambiguity is the main risk here, not the event itself. Sized at 10% cap.",
-    "key_signals": {
-      "pro_max_foldable_launch": "September 2026",
-      "base_model_launch": "spring 2027",
-      "resolution_risk": "Does 'iPhone 18' require the base model or does Pro count?"
+      "ticker": "KXCMG-26JULCOMP-1.0",
+      "title": "Will Chipotle report Above 1% comparable restaurant sales in Q2 2026?",
+      "category": "other",
+      "side": "no",
+      "no_ask": 12,
+      "yes_ask": 89,
+      "p_yes": 0.6,
+      "edge_cents": 28,
+      "count": 1025,
+      "stake_cents": 12300,
+      "stake_dollars": 123.0,
+      "confidence": "medium",
+      "close_time": "2026-08-21T20:00:00Z",
+      "rationale": "Chipotle guided ~1% comp sales in Q2 \u2014 right at the threshold. Three consecutive negative comp quarters. Stock -6.27% in 20d, earnings -17.9%. Market at 89% YES overestimates. Estimate 60% YES. NO at 12c.",
+      "key_signals": {
+        "rsi": 45.1,
+        "pct_change_20d": -6.27,
+        "earnings_growth": -0.179,
+        "q2_guidance_comps": "about 1%",
+        "consecutive_negative_quarters": 3
+      },
+      "resolve_by": "2026-08-21",
+      "actual_outcome": null,
+      "actual_p_yes": null
     },
-    "resolve_by": "2027-01-01",
-    "actual_outcome": null,
-    "actual_p_yes": null
-  },
-  {
-    "ticker": "KXCMG-26JULCOMP-1.0",
-    "title": "Will Chipotle report Above 1% comparable restaurant sales in Q2 2026?",
-    "category": "other",
-    "side": "no",
-    "no_ask": 12,
-    "yes_ask": 89,
-    "p_yes": 0.60,
-    "edge_cents": 28,
-    "count": 1025,
-    "stake_cents": 12300,
-    "stake_dollars": 123.00,
-    "confidence": "medium",
-    "close_time": "2026-08-21T20:00:00Z",
-    "rationale": "Chipotle guided ~1% comp sales in Q2 — right at the threshold. Three consecutive negative comp quarters. Stock -6.27% in 20d, earnings -17.9%. Market at 89% YES overestimates. Estimate 60% YES. NO at 12c.",
-    "key_signals": {
-      "rsi": 45.1,
-      "pct_change_20d": -6.27,
-      "earnings_growth": -0.179,
-      "q2_guidance_comps": "about 1%",
-      "consecutive_negative_quarters": 3
+    {
+      "ticker": "KXCMG-26JULREST-4160",
+      "title": "Will Chipotle report Above 4160 total restaurant count in Q2 2026?",
+      "category": "other",
+      "side": "yes",
+      "yes_ask": 51,
+      "p_yes": 0.6,
+      "edge_cents": 9,
+      "count": 232,
+      "stake_cents": 11832,
+      "stake_dollars": 118.32,
+      "confidence": "low-medium",
+      "close_time": "2026-08-21T20:00:00Z",
+      "rationale": "Q1 2026 ended at 4,090 locations. Full-year target 350-370 new units; Q2 must accelerate vs Q1's 49 openings. Net additions of 65-80 = 4,155-4,170 \u2014 straddles 4,160 threshold. Lean 60% YES. Second Chipotle position \u2014 hits correlation cap.",
+      "key_signals": {
+        "q1_locations": 4090,
+        "q1_new_openings": 49,
+        "fy2026_openings_guidance": "350-370",
+        "threshold": 4160
+      },
+      "resolve_by": "2026-08-21",
+      "actual_outcome": null,
+      "actual_p_yes": null
     },
-    "resolve_by": "2026-08-21",
-    "actual_outcome": null,
-    "actual_p_yes": null
-  },
-  {
-    "ticker": "KXCMG-26JULREST-4160",
-    "title": "Will Chipotle report Above 4160 total restaurant count in Q2 2026?",
-    "category": "other",
-    "side": "yes",
-    "yes_ask": 51,
-    "p_yes": 0.60,
-    "edge_cents": 9,
-    "count": 232,
-    "stake_cents": 11832,
-    "stake_dollars": 118.32,
-    "confidence": "low-medium",
-    "close_time": "2026-08-21T20:00:00Z",
-    "rationale": "Q1 2026 ended at 4,090 locations. Full-year target 350-370 new units; Q2 must accelerate vs Q1's 49 openings. Net additions of 65-80 = 4,155-4,170 — straddles 4,160 threshold. Lean 60% YES. Second Chipotle position — hits correlation cap.",
-    "key_signals": {
-      "q1_locations": 4090,
-      "q1_new_openings": 49,
-      "fy2026_openings_guidance": "350-370",
-      "threshold": 4160
+    {
+      "ticker": "KXOAIANTH-40-ANTH",
+      "title": "Will OpenAI or Anthropic IPO first? \u2014 Anthropic",
+      "category": "ipo",
+      "side": "no",
+      "no_ask": 76,
+      "yes_ask": 25,
+      "p_yes": 0.15,
+      "edge_cents": 9,
+      "count": 106,
+      "stake_cents": 8056,
+      "stake_dollars": 80.56,
+      "confidence": "medium",
+      "close_time": "2040-01-01T04:59:00Z",
+      "rationale": "OpenAI: confidential S-1 filed May 22, September target, Goldman/Morgan leading. Anthropic: no S-1 filed, October internal target. OpenAI has a 4-5 month process lead. Market at 25% for Anthropic-first is too generous. Estimate 15% YES.",
+      "key_signals": {
+        "openai_s1_filed": "2026-05-22",
+        "openai_target": "September 2026",
+        "anthropic_s1_filed": false,
+        "anthropic_target": "October 2026 internal"
+      },
+      "resolve_by": "2040-01-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
     },
-    "resolve_by": "2026-08-21",
-    "actual_outcome": null,
-    "actual_p_yes": null
-  },
-  {
-    "ticker": "KXOAIANTH-40-ANTH",
-    "title": "Will OpenAI or Anthropic IPO first? — Anthropic",
-    "category": "ipo",
-    "side": "no",
-    "no_ask": 76,
-    "yes_ask": 25,
-    "p_yes": 0.15,
-    "edge_cents": 9,
-    "count": 106,
-    "stake_cents": 8056,
-    "stake_dollars": 80.56,
-    "confidence": "medium",
-    "close_time": "2040-01-01T04:59:00Z",
-    "rationale": "OpenAI: confidential S-1 filed May 22, September target, Goldman/Morgan leading. Anthropic: no S-1 filed, October internal target. OpenAI has a 4-5 month process lead. Market at 25% for Anthropic-first is too generous. Estimate 15% YES.",
-    "key_signals": {
-      "openai_s1_filed": "2026-05-22",
-      "openai_target": "September 2026",
-      "anthropic_s1_filed": false,
-      "anthropic_target": "October 2026 internal"
-    },
-    "resolve_by": "2040-01-01",
-    "actual_outcome": null,
-    "actual_p_yes": null
-  },
-  {
-    "ticker": "KXIPOANTHROPIC-DATE-26OCT01",
-    "title": "When will Anthropic officially announce an IPO? Before Oct 1, 2026",
-    "category": "ipo",
-    "side": "no",
-    "no_ask": 38,
-    "yes_ask": 66,
-    "p_yes": 0.50,
-    "edge_cents": 12,
-    "count": 190,
-    "stake_cents": 7220,
-    "stake_dollars": 72.20,
-    "confidence": "low-medium",
-    "close_time": "2026-10-01T03:59:00Z",
-    "rationale": "No S-1 filed as of May 30. SEC review takes 60-90 days from filing — barely possible by Oct 1. Market at 66% YES feels overconfident. Estimate 50% YES. NO at 38c gives +12c edge.",
-    "key_signals": {
-      "s1_filed": false,
-      "series_h_closed": "2026-05-28",
-      "internal_target": "October 2026",
-      "sec_review_days": "60-90"
-    },
-    "resolve_by": "2026-10-01",
-    "actual_outcome": null,
-    "actual_p_yes": null
-  }
+    {
+      "ticker": "KXIPOANTHROPIC-DATE-26OCT01",
+      "title": "When will Anthropic officially announce an IPO? Before Oct 1, 2026",
+      "category": "ipo",
+      "side": "no",
+      "no_ask": 38,
+      "yes_ask": 66,
+      "p_yes": 0.5,
+      "edge_cents": 12,
+      "count": 190,
+      "stake_cents": 7220,
+      "stake_dollars": 72.2,
+      "confidence": "low-medium",
+      "close_time": "2026-10-01T03:59:00Z",
+      "rationale": "No S-1 filed as of May 30. SEC review takes 60-90 days from filing \u2014 barely possible by Oct 1. Market at 66% YES feels overconfident. Estimate 50% YES. NO at 38c gives +12c edge.",
+      "key_signals": {
+        "s1_filed": false,
+        "series_h_closed": "2026-05-28",
+        "internal_target": "October 2026",
+        "sec_review_days": "60-90"
+      },
+      "resolve_by": "2026-10-01",
+      "actual_outcome": null,
+      "actual_p_yes": null
+    }
   ],
   "skips": [
     {
@@ -270,7 +269,7 @@
       "yes_ask": 6,
       "p_yes": 0.08,
       "edge_cents": 2,
-      "reason": "Q1 US comps -7.8%. Edge only +2c — below 5c threshold. Market fairly priced."
+      "reason": "Q1 US comps -7.8%. Edge only +2c \u2014 below 5c threshold. Market fairly priced."
     },
     {
       "ticker": "KXMO-26JULCIGSHIP-13500000000.0",
@@ -284,13 +283,13 @@
       "ticker": "KXTAKEOVERACQWB-27JUN30-PSKY",
       "title": "Will Paramount's takeover of Warner Brothers succeed before July 2027?",
       "yes_ask": 83,
-      "p_yes": 0.80,
+      "p_yes": 0.8,
       "edge_cents": -3,
       "reason": "Shareholders approved April 2026, Q3 2026 close expected. Market 83%, my estimate 80%. No meaningful edge."
     },
     {
       "ticker": "KXLLM1-26JUN06-ANTH",
-      "title": "Best AI in Jun 2026? — Claude: Anthropic",
+      "title": "Best AI in Jun 2026? \u2014 Claude: Anthropic",
       "yes_ask": 99,
       "p_yes": 0.96,
       "edge_cents": -3,
@@ -302,10 +301,9 @@
       "yes_ask": 19,
       "p_yes": 0.14,
       "edge_cents": 3,
-      "reason": "eBay rejected bid May 12. Edge for NO = +4c — below 5c threshold."
+      "reason": "eBay rejected bid May 12. Edge for NO = +4c \u2014 below 5c threshold."
     }
   ],
-
   "portfolio_summary": {
     "trades": 10,
     "skips": 5,
@@ -330,18 +328,27 @@
       "total": 1510
     },
     "correlation_groups": {
-      "best_ai_dec_2026": ["KXLLM1-26DEC31-A (NO)", "KXLLM1-26DEC31-GOOG (YES)", "KXLLM1-26DEC31-OAI (YES)"],
-      "chipotle": ["KXCMG-26JULCOMP-1.0 (NO)", "KXCMG-26JULREST-4160 (YES)"],
-      "anthropic_ipo_timing": ["KXOAIANTH-40-ANTH (NO)", "KXIPOANTHROPIC-DATE-26OCT01 (NO)"]
+      "best_ai_dec_2026": [
+        "KXLLM1-26DEC31-A (NO)",
+        "KXLLM1-26DEC31-GOOG (YES)",
+        "KXLLM1-26DEC31-OAI (YES)"
+      ],
+      "chipotle": [
+        "KXCMG-26JULCOMP-1.0 (NO)",
+        "KXCMG-26JULREST-4160 (YES)"
+      ],
+      "anthropic_ipo_timing": [
+        "KXOAIANTH-40-ANTH (NO)",
+        "KXIPOANTHROPIC-DATE-26OCT01 (NO)"
+      ]
     }
   },
-
   "self_improve_checklist": {
     "KXIPOSPACEX_jul1": "Resolve Jul 1 2026. Did SpaceX first trading day fall before or after Jul 1? Was 12% NO reasonable?",
     "KXCMG_aug21": "Resolve Aug 21 2026. Did Chipotle Q2 comps beat 1%? Was stock/earnings weakness predictive? Did restaurant count clear 4,160?",
     "KXMCD_sep4": "Resolve Sep 4 2026. Did Q2 global comps beat 2.5%? Was the stock-weakness warning predictive at all?",
     "KXIPOANTHROPIC_oct1": "Resolve Oct 1 2026. Did Anthropic officially announce IPO before Oct 1? Was 50% YES right vs market 66%?",
-    "KXIPHONERELEASE_dec31": "Resolve Jan 1 2027. Did Apple release iPhone 18 before 2027? CRITICAL: how did Kalshi define 'iPhone 18' — Pro model or base model? This will reveal if resolution-criteria bets are worth taking.",
+    "KXIPHONERELEASE_dec31": "Resolve Jan 1 2027. Did Apple release iPhone 18 before 2027? CRITICAL: how did Kalshi define 'iPhone 18' \u2014 Pro model or base model? This will reveal if resolution-criteria bets are worth taking.",
     "KXLLM1_dec31": "Resolve Dec 31 2026. Which model won? Was market right to price Claude at 64%? Was fragmented-landscape thesis correct?",
     "KXOAIANTH_longterm": "Resolve whenever one IPOs. Did OpenAI or Anthropic IPO first? Was 15% for Anthropic-first reasonable?"
   }
